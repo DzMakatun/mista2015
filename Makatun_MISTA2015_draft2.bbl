@@ -1,0 +1,44 @@
+\begin{thebibliography}{1}
+\providecommand{\url}[1]{{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{DOI~\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{DOI~\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem{Balewski_2012pa}
+Balewski, J., Lauret, J., Olson, D., Sakrejda, I., Arkhipkin, D., Bresnahan,
+  J., Keahey, K., Porter, J., et~al.: Offloading peak processing to virtual
+  farm by star experiment at rhic.
+\newblock J. Phys. Conf. Ser. (012011), 368 (2012)
+
+\bibitem{Trees}
+Beaumont, O., Carter, L., Ferrante, J., Legrand, A., Robert, Y.:
+  Bandwidth-centric allocation of independent tasks on heterogeneous platforms.
+\newblock International Parallel and Distributed Processing Symposium
+  (IPDPS’2002), IEEE Computer  (2002)
+
+\bibitem{ACAT_2014}
+Makatun, D., Lauret, J., Rudov\'a, H., \v{S}umbera, M.: Planning for
+  distributed workflows: constraint-based coscheduling of computational jobs
+  and data placement in distributed environments.
+\newblock J. Phys.: Conf. Ser.  (2014)
+
+\bibitem{Makatun_cache}
+Makatun, D., Lauret, J., \v{S}umbera, M.: Study of cache performance in
+  distributed environment for data processing.
+\newblock J. Phys.: Conf. Series (012016), 523 (2014)
+
+\bibitem{Globus_scheduler}
+Ranganathan, K., Foster, I.: Decoupling computation and data scheduling in
+  distributed data-intensive applications.
+\newblock 11th IEEE International Symposium on High Performance Distributed
+  Computing pp. 352 -- 358 (2002)
+
+\bibitem{Zerola}
+Zerola, M., Lauret, J., Bart\'ak, R., \v{S}umbera, M.: One click dataset
+  transfer: toward efficient coupling of distributed storage resources and
+  cpus.
+\newblock J. Phys.: Conf. Ser. p. 368 (2012)
+
+\end{thebibliography}

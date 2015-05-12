@@ -1,0 +1,278 @@
+% For MISTA 2015, use the default option that has been supplied
+\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallextended]{svjour3}     % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}         % twocolumn
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+%
+% \usepackage{mathptmx}      % use Times fonts if available on your TeX system
+%
+% insert here the call for the packages your document requires
+%\usepackage{latexsym}
+% etc.
+%
+% please place your own definitions here and don't use \def but
+% \newcommand{}{}
+%
+% Insert the name of "your journal" with
+% This is preset for MISTA 2015: Do not change
+\journalname{MISTA 2015}
+%
+\begin{document}
+
+\title{Model for planning of distributed data production}
+
+\author{Dzmitry Makatun         \and
+		J\'er\^ome~Lauret		\and
+		Hana~Rudov\'a			\and
+		Michal~\v{S}umbera	
+}
+
+\institute{Dzmitry Makatun \at
+              Faculty of Nuclear Physics and Physical Engineering, Czech Technical University in Prague \\
+              \email{dzmitry.makatun@fjfi.cvut.cz}           %  \\
+           \and
+           J\'er\^ome~Lauret \at
+              STAR, Brookhaven National Laboratory (BNL), USA \\
+              \email{jlauret@bnl.gov}          %  \\              
+           \and
+           Hana~Rudov\'a \at
+              Masaryk University, Brno, Czech Republic \\
+              \email{hanka@fi.muni.cz}           %  \\              
+           \and
+           Michal~\v{S}umbera \at
+              Nuclear Physics Institute (NPI), Academy of Sciences (ASCR),
+ Czech Republic \\
+              \email{sumbera@ujf.cas.cz}           %  \\
+}
+
+\maketitle
+\section{Introduction}
+\label{intro}
+The STAR experiment at the Relativistic Heavy Ion Collider (RHIC) studies a
+primordial form of matter that existed in the universe shortly after the Big
+Bang. Collisions of heavy ions occur millions of times per second inside the
+detector, producing tens of petabytes of raw data each year. All the raw data
+has to be processed in order to reconstruct physical events which are
+further analyzed by scientists. This process is called data production.  Like
+any other modern experiment in High Energy and Nuclear Physics (HENP), STAR intends to rely on
+distributed data processing, making use of several remote computational sites
+(for some experiments this number can scale up to several hundreds).
+
+When running data intensive applications on distributed computational
+resources long I/O overheads may be observed as access to remotely stored data
+is performed. Latency and bandwidth can become the major limiting factors for
+the overall computation performance and can reduce the CPU time\,/\,wall time 
+ratio due to excessive I/O wait. 
+Widely used data management systems in HENP community
+(Xrootd, DPM) are focused on providing heterogeneous access to distributed
+storage and do not consider data pre-placement with respect to available CPUs,
+job durations or network performance. At the same time job scheduling systems
+(PBS, Condor) do not reason about transfer overheads when accessing data at
+distributed storage. For this reason, an optimization of data transferring and
+distribution across multiple sites is often done manually, using a custom
+setup for each particular infrastructure \cite{Balewski_2012pa}. 
+
+In previous collaboration between BNL and NPI/ASCR, we addressed the problem of
+efficient data transferring in a Grid environment \cite{Zerola}.
+% and cache management \cite{Makatun_cache}. 
+Data transfers between $n$~computational sites and $m$~data locations were
+considered but job scheduling was not covered
+by that work. In \cite{ACAT_2014} we
+proposed a constraint programming planner that schedules computational jobs
+and data transfers in a distributed environment in order to optimize resource
+utilization and reduce the overall completion time. Since such global
+scheduling is computationally demanding it should be divided into several
+stages in order to improve scheduler performance and scalability. A planing of
+resource load can be completed in the first stage before scheduling file
+transfers and jobs. In this work we address the problem of data production
+planning, answering the question how the data should be transferred given the
+network structure, bandwidth, storage and CPU slots available. This will allow
+local schedulers to process jobs and have CPUs busy all the time while not
+exceeding disk and network capacities.
+
+Optimization of data intensive applications in Grid was studied
+in~\cite{Globus_scheduler}. In this work an optimization was achieved by
+replication of highly used files to more sites while the jobs were executed
+where their input data is located. However, this is not the case for data
+production, when each file has to be processed once. 
+%
+Explicit model distributing jobs over a Grid with respect to the network
+bandwidth was proposed in~\cite{Trees}. The network structure of the Grid was
+modeled as a tree and all the files were assumed to be of the same size and
+processing time. In our study we do not limit the network topology to trees,
+and assume fluctuations of job parameters. 
+
+\section{Modeling}
+\label{modeling}
+Due to a data level of parallelism a typical workflow of HENP computation
+consists of independent jobs using one CPU, one input and one output file. We
+assume there is a local scheduler running at each site, which picks a new
+input file to process from the local storage of that site each time when a CPU becomes
+free. Input data must be transferred from the central storage
+to each site in such a manner that at the every moment of time there is enough
+input files at each site to keep all the available CPUs busy while not
+exceeding the local storage and network throughput. Another task
+is to transfer the output files back to central storage, cleaning each local
+storage for the new input.
+
+Let us consider a scheduling time interval $\Delta T$. We assume that at the
+starting moment all the CPUs in the Grid are busy, and there is some amount of
+input data already placed at each site. We need to transfer the next portion
+of data to each site during time interval $\Delta T$ in order to avoid
+draining of the local queue by the end of this interval. 
+
+The computational Grid is represented by a directed weighted graph where
+vertexes $c_{i} \in C$ are computational nodes and edges $l_{j} \in L$ are
+network links. Weight of each link $b_{j}$ is the amount of data that can be
+transferred over the link per unit of time (i.e. bandwidth). One of the nodes
+$c_{0}$ is the central storage where all the input files for the further
+processing are initially placed. All the output files has to be transferred
+back to $c_{0}$ from the computational nodes. We will give two separate
+problem formulations: for an input and output transfer planning. 
+
+In order to formulate a network flow maximization problem \cite{Network_flows}
+for input/output file transferring we have to define a capacitated $\{s,t\}$
+network, which is a set of vertexes $V$ including a source $s$ and a sink $t$;
+and a set of edges $e\in E$ with their capacities $cap(e)$. A solution that
+assigns a nonnegative integer number $f(e)$ to each edge $e \in E$ can be
+found in polynomial time with known algorithms.
+
+In order to transform a given graph of a Grid into a capacitated $\{s,t\}$
+network for an input transfer problem we add two dummy vertexes: a source $s$
+and a sink $t$. Next we add  dummy edges $d_{i} \in D$ from each computational
+node $i$ to the sink, and a dummy edge $q_{0}$ from the source $s$ to the
+central storage $c_{0}$. These dummy edges allow us to introduce constraints
+on the storage capacity of the nodes. The set of vertexes $V$ consists of
+computational nodes $C$ and dummy vertexes: $V= C \cup \{s,t\}$. The final set
+of edges consists of real network links $L$, dummy edges $D$ from
+computational nodes to the sink and from the source to the central storage
+$q_{0}$: $E= L \cup D \cup \{q_{0}\}$. Capacity of each edge defines the
+maximal amount of data that can be transferred over an edge within time
+interval $\Delta T$: 
+%
+\begin{equation} 
+\label{edge_cap} 
+cap(e) = \left\{
+\begin{array}{l l} 
+b_{j} \cdot \Delta T & \text{if }e = l_{j} \in L \\ w_{i} &
+\text{if } e = d_{i} \in D\\ k_{0} & \text{if } e = q_{0} 
+\end{array} \right.
+\end{equation} 
+%
+where $w_{i}$ is the maximal amount of data that can be
+transferred to the node $i$ without exceeding its storage capacity $Disk_{i}$
+and $k_{0}$ is the total size of available input files at $c_{0}$. We denote
+the solution for the input transfer problem as $f^{in}(e)$.
+
+For transfer of output files we use a similar transformation, but swap the
+source $s$ and the sink $t$, change the direction of dummy edges and redefine
+capacities of dummy edges. In this case the capacity $\overline{k}_{0}$ of the
+dummy edge $\overline{q}_{0}$ leading from the central storage $c_0$ to the
+sink $s$ is equal to the amount of data which can be transferred to $c_0$
+within time interval $\Delta T$ (it is limited by the available space at the
+central storage). The capacity $\overline{w}_{i}$ of dummy edges
+$\overline{d}_{i}$ leading from the source $t$ to computational nodes $c_{i}$
+is equal to the maximum amount of output data which can be transferred from
+the node $c_{i}$.
+%
+\begin{equation}
+\label{edge_cap_out}
+cap(e) = \left\{ 
+  \begin{array}{l l}
+    b_{j} \cdot \Delta T & \text{if }e = l_{j} \in L \\
+    \overline{w}_{i} & \text{if } e = \overline{d}_{i} \in \overline{D}\\
+    \overline{k}_{0} & \text{if } e = \overline{q}_{0}
+  \end{array} \right.
+\end{equation}
+%
+We denote the solution for the output transfer problem as $f^{out}(e)$.
+
+Let us consider data production jobs which perform the same type of processing
+on the same type of files. Duration $p_{j}$ of a job $j$  processing an input
+file of size $InSize_{j}$ at a node $i$ is $p_{j} = \alpha_{i} \cdot
+InSize_{j}$ where $\alpha_{i}$ is constant for each node $i$.  The ratio of
+size of input $InSize_{j}$ and output $OutSize_{j}$ files of each job $j$ is
+considered to be constant for the same type of data processing, i.e.,
+$OutSize_{j} = \beta \cdot InSize_{j}$.  During the time interval $\Delta T$ a
+node $i$ with $NCPU_{i}$  of CPUs  will process $\frac{1}{\alpha_{i}} \cdot
+NCPU_{i} \cdot \Delta T$ of input data and will produce
+$\frac{\beta}{\alpha_{i}} \cdot NCPU_{i} \cdot \Delta T$ of output data.
+Using constraints on storage space, we can define the maximal amount of input
+$w_{i}$ and output $\overline{w}_{i}$ data which can be transferred to/from a
+node $i$:
+%
+\begin{eqnarray}
+w_{i} &=&
+Disk_{i} - I_{i}^{in} - I_{i}^{out} + \frac{1 - \beta}{\alpha_{i}} \cdot
+NCPU_{i} \cdot \Delta T + Del_{i}^{out} \label{w}\\
+\overline{w}_{i} &=& I_{i}^{out} + \frac{\beta}{\alpha_{i}} \cdot NCPU_{i} \cdot \Delta T - Min_{i}^{out} \label{sigma}
+\end{eqnarray}  
+%
+where $Disk_{i}$ is available disk space at the node $i$, $I_{i}^{in}$ and
+$I_{i}^{out}$ are the initial size of input and output data at a local storage
+respectively, $Del_{i}^{out}$ is the amount of output data that will be
+transferred out of the node and deleted from its storage during $\Delta T$;
+$Min_{i}^{out}$ is the total size of output files which cannot be transferred
+because the jobs which produce them are not finished (output files of running
+jobs). 
+
+In the Eqn.~\ref{w}, $Del_{i}^{out}$ is equal to the amount of data which will
+be transferred from a node $c_{i}$, i.e., the solution to the output transfer
+problem $f^{out}(\overline{d}_{i})$. In the Eqn.~\ref{sigma}, $\Delta T$ and
+$Min_{i}^{out}$ are parameters of the scheduler. The other values used in
+Eqns.~\ref{w}--\ref{sigma} can be obtained from monitoring data right before
+each planning iteration.
+
+\section{Solving Procedure}
+\label{solve}
+
+It can be proven that the maximum flow problems for input and output transfers
+can be solved independently under assumptions: (a) all the real network links
+in the considered Grid are full-duplex, i.e., a network throughput between two
+nodes is the same in both directions (b) in a steady state the size of the
+output transferred from each node is proportional to the size of the input
+transferred to that node in each scheduling interval, i.e.,
+$f^{out}(\overline{d}_{i})= \beta \cdot f^{in}(d_{i})$, where $\beta \leq 1$.
+
+Since in real environment the assumption (b) will not strongly hold due to
+resource performance fluctuations we propose the following approach to
+solve the problem:
+%
+\begin{enumerate}
+\item Calculate values for $\overline{w}_{i}$ using Eqn.~\ref{sigma}.
+\item Solve the problem for output data flows to obtain $f^{out}(e)$.
+\item Using Eqn.~\ref{w} and $Del_{i}^{out} = f^{out}(\overline{d}_{i})$ calculate $w_{i}$.
+\item For real links $l \in L$ reduce the capacity by the amount which is used by output transfers: $cap(l_{j}) = b_{j} \cdot \Delta T - f^{out}(l_{j})$.
+\item Solve the problem for input transfers with $w_{i}$ and $cap(l_{j})$ defined in previous steps. Find input data flows $f^{in}(e)$.
+\end{enumerate}
+%
+To conclude, this procedure is expected to compute feasible data transfers 
+such that CPUs in Grid are busy with computational jobs while not exceeding 
+local disk capacities.
+
+\section{Conclusion}
+\label{Conclusion}
+
+In this paper we proposed a model of distributed data production, where all
+the files from a single source has to be processed once and transferred back.
+This model allows planning of WAN, storage and CPU loads using the network
+flow maximization approach. The proposed model will be used in a distributed
+data production planner which is being developed. The planner will enable
+automated and scalable planning and optimization of distributed computations
+which are highly required in data intensive computational fields such as High Energy and Nuclear Physics.
+
+\begin{acknowledgements}
+This work has been supported by the Czech Science Foundation
+(13-20841S, P202$/$12$/$0306),  the MEYS grant CZ.1.07/2.3.00/20.0207 of the European Social Fund (ESF) in the Czech Republic: “Education for Competitiveness Operational Programme” (ECOP) and the Office of Nuclear Physics within the U.S. Department of Energy.  
+\end{acknowledgements}
+
+\bibliography{bibliography}{}
+\bibliographystyle{spmpsci}
+
+\end{document}
+
+\end{document}
