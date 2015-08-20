@@ -1,0 +1,515 @@
+\documentclass{beamer}
+\usepackage{graphicx}
+\usepackage{caption}
+%\usepackage{subcaption}
+\usepackage{color}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{wrapfig}
+\usepackage{amsmath}
+\usepackage[
+backend=bibtex,
+sorting=none,
+style=authoryear
+]{biblatex}
+\addbibresource{bibliography.bib}
+
+\defbibenvironment{nolabelbib}
+  {\list
+     {}
+     {\setlength{\leftmargin}{\bibhang}%
+      \setlength{\itemindent}{-\leftmargin}%
+      \setlength{\itemsep}{\bibitemsep}%
+      \setlength{\parsep}{\bibparsep}}}
+  {\endlist}
+  {\item}
+
+\setbeamertemplate{navigation symbols}{}
+\usetheme{CambridgeUS}
+\usecolortheme{beaver} 
+
+\beamersetuncovermixins{\opaqueness<1>{25}}{\opaqueness<2->{15}}
+
+%\pgfdeclareimage[height=2cm]{i4}{pic/acat.pdf}
+
+
+%\author[Dzmitry Makatun]{\textbf{Dzmitry~Makatun} \inst{1} $^{,}$ \inst{2}}
+
+\author[Dzmitry Makatun]{\textbf{Dzmitry~Makatun} \inst{1} \inst{3} \and J\'er\^ome~Lauret\inst{2}\\ \and Michal~\v{S}umbera \inst{1} \and Hana~Rudov\'a \inst{4}}
+\title[Distributed data production planning]{Model for planning of distributed data production} 
+\institute [KM, FJFI]
+{ 
+  \inst{1}%
+  Nuclear Physics Institute, Academy of Sciences, Czech Republic
+  \pgfdeclareimage[height=2cm]{i1}{pic/ujf.pdf}   
+  \and
+  \inst{2}%
+  Brookhaven National Laboratory, USA
+  \pgfdeclareimage[height=2cm]{i2}{pic/STAR.pdf}
+  \and
+  \inst{3}
+Czech Technical University in Prague, Czech Republic  
+\pgfdeclareimage[height=2cm]{i3}{pic/ctu.pdf} 
+\and
+\inst{4}
+Faculty of Informatics, Masaryk University, Czech Republic
+\pgfdeclareimage[height=2cm]{i6}{pic/fjfi.pdf}
+\pgfdeclareimage[height=2cm]{i8}{pic/doe.pdf}
+ 
+\vspace{-4mm}   
+  \pgfuseimage{i1}
+  \pgfuseimage{i2}
+  \pgfuseimage{i3}
+  %\pgfuseimage{i4}
+  %\pgfuseimage{i5}
+  %\pgfuseimage{i6}
+  %\pgfuseimage{i8}
+
+  \vspace{-7mm}
+\begin{center}
+d.i.makatun@gmail.com
+\end{center}
+\vspace{-5mm}
+  }
+\begin{document}
+\date{27.08.2015} 
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+\section{Introduction}
+\subsection{Data processing in High Energy Nuclear Physics (HENP)}
+
+\begin{frame}\frametitle{Computations in HENP: What do we compute?}
+\begin{figure}
+\begin{center}
+%\vspace{-1 cm}
+\includegraphics[ height=0.4\textheight]{pic/rhic.jpg}
+\hspace{0.5cm}
+\includegraphics[ height=0.4\textheight]{pic/star.jpg}
+\end{center}
+\end{figure}
+\vspace{-1 cm}
+\begin{block}{}
+		\begin{itemize}
+			\item Brookhaven National Laboratory (\textbf{BNL}) Long Island, NY, USA.
+			\item Relativistic Heavy Ion Collider (\textbf{RHIC}). A quark-gluon plasma is created in heavy ion collisions to study the form of matter that existed shortly after the Big Bang.
+			\item Solenoid Tracker at RHIC (\textbf{STAR}). Collisions occur millions of times per second. Events of size 200 MB are processed at rates up to 100Hz. Raw data output rate is $\sim$ \textcolor{red} {30 MB/sec}.
+		\end{itemize}
+ 	\end{block}
+\end{frame}
+
+\begin{frame}\frametitle{Computations in HENP: How do we compute?}
+\begin{columns}[c]
+  \column{.7\textwidth}
+    \begin{block}{Stages}
+      \begin{enumerate}      
+        \item \textbf{Data Production:} The raw output data is processed to reconstruct events ($\sim$ ones).\\
+        \item \textbf{User Analysis:} Reconstructed events are analyzed by scientists (many times).\\
+      \end{enumerate}
+ 	\end{block}
+ 	
+    \begin{block}{At RHIC Computing Facility (RCF): } 	
+      \begin{itemize}
+	    \item All the data (raw, reconstructed and analysis output) permanently stored on tape.
+	    \item $\sim$ 31 PB of data.
+        \item $\sim$ 12 000 jobs running simultaneously.\\
+      \end{itemize}
+    \end{block}
+
+ \textbf{Growing usage of remote computing facilities.}
+
+  \column{.3\textwidth}
+  \begin{figure}
+    \begin{center}
+      \includegraphics[ height=0.35\textheight]{pic/nersc.jpg}
+      
+    \end{center}
+  \end{figure} 
+    \begin{figure}
+    \begin{center}
+      \includegraphics[ height=0.3\textheight]{pic/grid-net.png}
+    \end{center}
+  \end{figure} 	
+\end{columns}
+\end{frame}
+
+\begin{frame}\frametitle{Data production vs User analysis (in Grid)}
+\begin{columns}[c]
+\column{.45\textwidth}
+\begin{block}{}
+Grid = network of computational servers
+\end{block}
+
+\begin{block}{Data production}
+  \begin{itemize}
+    \item Single central storage
+    \item 1 job per file
+    \item 1 CPU per job
+    \item Input size $\approx$ Output size 
+  \end{itemize}
+  Lack of dedicated solution
+\end{block}
+
+\column{.45\textwidth}
+\begin{block}{User analysis}
+  \begin{itemize}
+    \item Distributed storage	
+    \item Data replication
+	\item Data processed by multiple jobs
+	\item Output size is negligible compared to input size
+	\item The processing time estimates are imprecise  
+  \end{itemize}
+  Most load-balancing tools consider similar scenario \textcolor{black}{[\cite{Globus_scheduler}]}
+\end{block}
+
+\end{columns}
+
+
+\begin{block}{}
+In our research we \textbf{focus on data production} in HENP.
+\end{block}
+\end{frame}
+
+
+\begin{frame}\frametitle{Data production: simplified view }
+ 	\begin{columns}[c] % the "c" option specifies center vertical alignment
+    \column{.6\textwidth} % column designated by a command 	
+    \begin{footnotesize}
+    \vspace{-11mm}
+	\begin{block}{Planning remote site usage}
+		\begin{itemize}
+		\item Input data is located at BNL.
+		\item Computational resources are available at BNL and several remote sites.
+		\item Output file has to be transferred back to BNL.
+		\item \textbf{How should we distribute a given set of files between sites to complete the processing faster?}
+		\end{itemize}
+ 	\end{block} 	
+ 	
+ 	\begin{block}{Current solutions} 	
+		\begin{itemize}
+		  \item Pull a job to free CPU (\textcolor{red}{cons:} I/O overhead)
+		  \item Adjust the load manually (\textcolor{red}{cons:} not scalable)
+		\end{itemize}
+	This should be optimized and automated.
+ 	\end{block}  	     
+
+ 	\end{footnotesize}
+ 	\column{.4\textwidth}
+ 		\vspace{-5mm}
+		\begin{figure}   
+				\includegraphics[trim = 25mm 10mm 0mm 30mm, clip, width=1.2\textwidth]{pic/Data_production_schema2.pdf}
+		\end{figure} 	 	
+ 	\end{columns}
+\end{frame}
+
+\begin{frame}\frametitle{Data production: more detailed view}
+ 	\begin{columns}[c] % the "c" option specifies center vertical alignment
+    \column{.6\textwidth} % column designated by a command 	
+    \begin{footnotesize}
+    \vspace{-10mm}
+	\begin{block}{New dimensions of the problem}	
+		\begin{itemize}		
+			\item Several possible data sources
+			\item Real network topology: shared links, \textbf{links between remote sites}
+			\item Limited storage at sites
+			\item \textbf{Which file source to select?}
+			\item \textbf{Which transfer path?}
+
+		\end{itemize}
+ 	\end{block}
+		\begin{block}{Example: data-production at ANL  \textcolor{black}{[\cite{Balewski}]}}	
+		\begin{itemize}
+			\item ANL: many CPU's, but slow connection and small disk space
+			\item NERSC: fast connection, large disk
+			\item Approach: Feed ANL from both BNL and NERCS sites		
+
+		\end{itemize}
+ 	\end{block}
+ 	\end{footnotesize} 
+ 	\column{.4\textwidth}
+		\begin{figure}
+			\begin{center}
+			    \vspace{-5mm}
+				\includegraphics [trim = 25mm 10mm 0mm 30mm, clip, width=1.2\textwidth]{pic/Data_production_schema_ANL2.pdf}
+			\end{center}
+			\end{figure} 	 	
+ 	\end{columns}
+\end{frame}
+
+
+\subsection{Load balancing}
+\begin{frame}\frametitle{Existing solutions (load balancing in HENP)} 	
+\begin{block}{Batch System + Distributed Data Management System (\textcolor{red}{uncoordinated})}  
+		\begin{itemize}
+			\item PBS, Condo. [Pull a job from the global queue]
+			\item Xrootd, DPM [The site which replies the first is selected as a source] 			
+		\end{itemize}
+ 	\end{block} 	
+\begin{block}{Data Trains (\textcolor{red}{user analysis only, human intervention})}	
+	 \begin{itemize}
+	 \item Group jobs by input data $\longrightarrow$ preplace data $\longrightarrow$ start jobs simultaneously $\longrightarrow$ kill latest x\% of jobs 
+	 \item Train runs periodically ($\sim$ ones per day)  
+ 	 \item Controlled by train operators 
+ 	  \end{itemize}
+\end{block}
+\begin{block}{Globus (Decoupling jobs and transfers)(\textcolor{red}{user analysis only})} 	
+\begin{itemize}
+ 	 \item Sends jobs to data  
+ 	 \item Replicates most "popular" files relying on usage history
+ 	 \item Where to replicate? When to replicate? No transfer planning
+ 	 \end{itemize}
+\end{block} 	 
+\end{frame}
+
+
+\section{Data production planning}
+\begin{frame}\frametitle{Data production problem}
+
+\begin{block}{Task}
+Create a global scheduler for Grid which will reason about:\\
+\hspace{1cm} 1.data~transferring \hspace{1cm} 2.~CPU~allocation\hspace{1cm} 3.~data~storage  
+\end{block}
+\begin{block}{Rules}  
+		\begin{itemize}
+			\item None of the resources (network links, data storages and CPUs) are over-saturated at any moment of time.
+			\item The jobs are executed  where the data is pre-placed.
+			\item Output data is transferred back to the central storage.
+			\item No excessive transfers or data replication.
+		\end{itemize}
+\end{block}
+	
+\begin{block}{Criteria}
+Minimize a makespan for processing of a given dataset 
+\end{block}
+	
+\end{frame}
+
+
+\subsection{Network flow model}
+\begin{frame}\frametitle{Network flow model} 
+  \begin{block}{Idea}
+    Plan resource load only and then distribute particular jobs accordingly.
+  \end{block}
+
+  \begin{block}{Network flow model}
+    \begin{itemize}
+      \item $\Delta T$ - planning time interval
+      \item $Flow$ - amount of data to be transferred
+      \item link capacity - $bandwidth \cdot \Delta T$
+    \end{itemize}
+  \end{block}    
+  Knowing data distribution at the beginning of $\Delta T$,\\
+  \textbf{how much data should be transferred over each network link?}
+  
+    \begin{block}{Sub-problems:}
+    \begin{itemize}
+      \item Input
+      \item Otput
+    \end{itemize}
+  \end{block}  
+  
+  Network flow maximization problem can be solved within polynomial time.
+\end{frame}
+
+\begin{frame}\frametitle{Input transfer planning}
+\textbf{How much data can be transferred during $\Delta T$?}\\
+Dummy edges - constraints on  storage and CPUs at each site.
+\vspace{-5mm}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics [trim= 30mm 30mm 30mm 30mm , clip, angle =-90, width=0.7\textwidth]{pic/real_network.pdf}
+	\end{center}
+	\label{real_network}
+\end{figure} 
+\vspace{-3mm}
+Output flow problem can be formulated similarly.
+\end{frame}
+
+\begin{frame}\frametitle{Capacities of dummy edges}
+\begin{columns}[c]
+\column{.45\textwidth}
+\begin{block}{Data production of a given dataset}
+  \begin{itemize}
+    \item Same type of computations
+    \item Same type of files 
+  \end{itemize}
+\end{block}
+
+\begin{block}{Constant parameters}
+  \begin{itemize}
+    \item $duration \approx \alpha \cdot inputSize $
+    \item $ouputSize \approx \beta \cdot  inputSize $ 
+  \end{itemize}
+\end{block}
+
+\begin{block}{Can predict}
+  \begin{itemize}
+    \item How fast the data is processed
+    \item How much output data is created
+  \end{itemize}
+\end{block}
+
+\column{.55\textwidth}
+\begin{scriptsize}
+\vspace{-6mm}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics [trim= 30mm 50mm 35mm 45mm , clip, width=.95\textwidth]{pic/alpha.pdf}
+	\\{$\alpha$ (s/MB)}	
+	\end{center}
+\end{figure} 
+\vspace{-8mm}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics [trim= 30mm 55mm 35mm 45mm , clip, width=.95\textwidth]{pic/beta.pdf}
+		\\{$\beta$}
+	\end{center}
+\end{figure} 
+\end{scriptsize}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}\frametitle{Solving procedure}
+\begin{block}{}
+Problems for input and output transfers can be solved independently under assumptions: 
+\begin{itemize}
+\item Full-duplex links,
+\item In a steady state at each node $Processed\_input\_data= \beta \cdot Created\_output\_data$, where~$\beta = const\leq 1$.
+\end{itemize}
+\end{block} 
+
+\begin{block}{Solving procedure}
+\begin{enumerate}
+\item Calculate capacities of (dummy) edges using monitoring data.
+\item Solve the problem for output data flows.
+\item Recalculate remaining network capacity.
+\item Solve the problem for input data flows.
+\end{enumerate}
+\end{block}    
+\end{frame}
+
+
+\subsection{Plan execution}
+\begin{frame}\frametitle{Plan execution}
+
+%\begin{columns}[c] % the "c" option specifies center vertical alignment
+%    \column{.6\textwidth} % column designated by a command 	
+After the global plan was created it has to be executed by computational nodes.
+
+\begin{block}{}
+\begin{itemize}
+\item A local handler at each node receives the plan:
+
+\begin{itemize}
+\footnotesize
+\item Flows of outgoing edges ($F_{i}$) - how much data of each type should be send over that link.
+\item Flow of dummy edges ($F_{dummy}$)- how much data should be processed at this node.
+ \end{itemize}
+
+\item When a new file arrives, the handler decides according to the plan and current state:
+
+\begin{itemize}
+\footnotesize
+ \item To process the file (to transfer over the dummy edge)
+ \item OR to forward it over one of the links.  
+ \end{itemize}
+ \item Decrease remaining flow of the link by the size of the file after transfer.
+\end{itemize}
+\end{block}    
+
+
+%\column{.4\textwidth}
+
+
+
+%\end{columns}
+\end{frame}
+
+\begin{frame}\frametitle{Plan execution: file is selected for local processing}
+\begin{figure}[h]
+		\includegraphics [trim= 30mm 30mm 30mm 30mm , clip, angle =-90, width=.8\textwidth]{pic/handler_process.pdf}
+	\label{real_network}
+\end{figure} 
+\end{frame}
+
+\begin{frame}\frametitle{Plan execution: file is forwarded}
+\begin{figure}[h]
+		\includegraphics [trim= 30mm 30mm 30mm 30mm , clip, angle =-90, width=.8\textwidth]{pic/handler_forwarddia.pdf}
+	\label{real_network}
+\end{figure} 
+\end{frame}
+
+
+\begin{frame}\frametitle{Simulations using GridSim (current work)}
+The model is being tested using GridSim.
+\begin{block}{GridSim}
+  \begin{itemize}
+    \item A toolkit for simulating of computational Grid
+    \item Discrete event simulation 
+    \item Elements: resource, machine, CPU, storage, network link, router, packet, job, file, user
+    \item Services: GIS, RMS, scheduling policies
+    \item Data exchange between entities
+  \end{itemize}
+\end{block}
+
+\begin{block}{Simulations}
+  \begin{itemize}
+    \item Verify the model and its execution
+    \item Test scalability
+    \item Use data collected from real experiments (STAR, ALICE)
+    \item Compare against other scheduling policies 
+  \end{itemize}
+\end{block}
+
+
+\end{frame}
+
+\section{Conclusion}
+
+\begin{frame}\frametitle{Conclusion}
+     Efficient \textbf{planning of distributed computations} is highly demanded in HENP.
+     
+  \begin{block}{Goals of the proposed model}
+    \begin{itemize}
+      \item Feasible data distribution: CPUs are not waiting for I/O 
+      \item Not exceeding network and storage capacities
+      \item Scalability and adaptability to changing environment
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{Further plans}
+    \begin{itemize}
+      \item Simulations using GridSim
+      \item Evaluation using real log data: STAR data production, other HENP experiments, scalability tests
+      \item Integration into existing distributed RMS
+      \item Deployment to the data production system of the STAR experiment, testing, statistics collection 
+    \end{itemize}
+   \end{block}
+  \end{frame}
+
+
+\begin{frame}<beamer>[noframenumbering]\frametitle{The end of the presentation}
+\begin{center}
+Thank You for Your attention.
+\end{center}
+\end{frame}
+
+\section*{Bibliography}
+
+
+\begin{frame}<beamer>[noframenumbering]\frametitle{References}
+\nocite{Rudova, ACAT_cp, Makatun_cache, Zerola}
+\renewcommand*{\bibfont}{\tiny}
+\printbibliography%[notkeyword=my]
+\end{frame}
+
+\section*{Backup}
+
+\end{document}
