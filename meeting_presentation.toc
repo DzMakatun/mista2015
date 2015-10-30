@@ -1,0 +1,17 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\defcounter {refsection}{0}\relax 
+\beamer@endinputifotherversion {3.30pt}
+\defcounter {refsection}{0}\relax 
+\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
+\defcounter {refsection}{0}\relax 
+\beamer@subsectionintoc {1}{1}{Data processing in High Energy Nuclear Physics (HENP)}{3}{0}{1}
+\defcounter {refsection}{0}\relax 
+\beamer@sectionintoc {2}{Data production planning}{8}{0}{2}
+\defcounter {refsection}{0}\relax 
+\beamer@subsectionintoc {2}{1}{Network flow model}{9}{0}{2}
+\defcounter {refsection}{0}\relax 
+\beamer@sectionintoc {3}{Model details}{11}{0}{3}
+\defcounter {refsection}{0}\relax 
+\beamer@subsectionintoc {3}{1}{Plan execution}{16}{0}{3}
+\defcounter {refsection}{0}\relax 
+\beamer@sectionintoc {4}{Simulation results}{20}{0}{4}

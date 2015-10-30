@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 \providecommand{\url}[1]{{#1}}
 \providecommand{\urlprefix}{URL }
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -11,22 +11,33 @@ Ahuja, R.K., Magnati, T.L., Orlin, J.B.: Network flows : theory, algorithms,
   and applications.
 \newblock Prentice Hall (1993)
 
-\bibitem{Balewski_2012pa}
+\bibitem{Balewski}
 Balewski, J., Lauret, J., Olson, D., Sakrejda, I., Arkhipkin, D., et~al.:
   Offloading peak processing to virtual farm by {STAR} experiment at {RHIC}.
-\newblock J. Phys.: Conf. Ser. \textbf{368}(012011) (2012)
+\newblock Journal of Physics: Conference Series \textbf{368}(012011) (2012)
 
 \bibitem{Trees}
 Beaumont, O., Carter, L., Ferrante, J., Legrand, A., Robert, Y.:
   Bandwidth-centric allocation of independent tasks on heterogeneous platforms.
-\newblock {IEEE} International Parallel and Distributed Processing Symposium
-  (2002)
+\newblock In: Parallel and Distributed Processing Symposium., Proceedings
+  International, IPDPS 2002, pp. 6--pp. IEEE (2001)
 
-\bibitem{ACAT_2014}
-Makatun, D., Lauret, J., Rudov\'a, H., \v{S}umbera, M.: Planning for
+\bibitem{GridSim}
+Buyya, R., Murshed, M.: {GridSim}: A toolkit for the modeling and simulation of
+  distributed resource management and scheduling for grid computing.
+\newblock The Journal of Concurrency and Computation: Practice and Experience
+  (CCPE) \textbf{14} (2002)
+
+\bibitem{KISTI-production}
+Hajdu, L., Lauret, J., Didenko, L.: {STAR} experience with automated high
+  efficiency {Grid} based data production framework at {KISTI}/{Korea}.
+\newblock In: {HEPiX} Spring 2015 Workshop. Oxford University, UK (2015)
+
+\bibitem{ACAT_cp}
+Makatun, D., Lauret, J., Rudov\'a, H., {\v{S}}umbera, M.: Planning for
   distributed workflows: constraint-based coscheduling of computational jobs
   and data placement in distributed environments.
-\newblock Journal of Physics: Conference Series \textbf{608}(1), 012,028 (2015)
+\newblock In: Journal of Physics: Conference Series, vol. 608, p. 012028 (2015)
 
 \bibitem{Globus_scheduler}
 Ranganathan, K., Foster, I.: Decoupling computation and data scheduling in
@@ -34,10 +45,21 @@ Ranganathan, K., Foster, I.: Decoupling computation and data scheduling in
 \newblock 11th {IEEE} International Symposium on High Performance Distributed
   Computing pp. 352--358 (2002)
 
+\bibitem{GridSimNetwork}
+Sulistio, A., Poduval, G., Buyya, R., Tham, C.K.: Constructing a grid
+  simulation with differentiated network service using {GridSim}.
+\newblock In: Proc. of the 6th International Conference on Internet Computing
+  (2005)
+
 \bibitem{Zerola}
 Zerola, M., Lauret, J., Bart\'ak, R., \v{S}umbera, M.: One click dataset
   transfer: toward efficient coupling of distributed storage resources and
   {CPU}s.
-\newblock J. Phys.: Conf. Ser. \textbf{368}(012022) (2012)
+\newblock Journal of Physics: Conference Series \textbf{368}(012022) (2012)
+
+\bibitem{MonAlisa}
+{MonAlisa}: Grid online monitoring data of the {ALICE} experiment.
+\newblock online (2015).
+\newblock \urlprefix\url{http://alimonitor.cern.ch/}
 
 \end{thebibliography}

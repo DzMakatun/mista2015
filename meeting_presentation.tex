@@ -304,6 +304,66 @@ Dummy edges - constraints on  storage and CPUs at each site.
 Output flow problem can be formulated similarly.
 \end{frame}
 
+\section{Model details}
+\begin{frame}\frametitle{Model details: input problem illustration}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics [trim= 30mm 20mm 30mm 30mm , clip, angle =-90, width=0.7\textwidth]{pic/network_general.pdf}
+	\end{center}
+
+	\label{network_general}	
+\end{figure} 
+$c_{0}$ is a central storage, $c_{i}$ are computational nodes (where $i>0$), $l_{j}$ are network links, $d_{i}$ are dummy edges from computational nodes to the sink $t$, $q_{0}$ is a dummy edge leading from the source $s$ to the $c_{0}$. 
+\end{frame}
+
+\begin{frame}<beamer>[noframenumbering]\frametitle{Model details: output problem illustration}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics [trim= 30mm 20mm 30mm 30mm , clip, angle =-90, width=0.7\textwidth]{pic/network_general_out.pdf}
+	\end{center}
+
+	\label{general_out}	
+\end{figure}
+	$c_{0}$ is a central storage, $c_{i}$ are computational nodes (where $i>0$), $l_{j}$ are network links, $\overline{d}_{i}$ are dummy edges from the source $t$ to computational nodes, $\overline{q}_{0}$ is a dummy edge leading from $c_{0}$ to the sink $s$.
+\end{frame}
+
+
+\begin{frame}<beamer>[noframenumbering]\frametitle{Model details}
+\begin{scriptsize}
+
+
+Input problem:
+\begin{equation} 
+\label{edge_cap} 
+cap(e) = \left\{
+\begin{array}{l l} 
+b_{j} \cdot \Delta T & \text{if }e = l_{j} \in L \\ w_{i} &
+\text{if } e = d_{i} \in D\\ k_{0} & \text{if } e = q_{0} 
+\end{array} \right.
+\end{equation} 
+Output problem:
+\begin{equation}
+\label{edge_cap_out}
+cap(e) = \left\{ 
+  \begin{array}{l l}
+    b_{j} \cdot \Delta T & \text{if }e = l_{j} \in L \\
+    \overline{w}_{i} & \text{if } e = \overline{d}_{i} \in \overline{D}\\
+    \overline{k}_{0} & \text{if } e = \overline{q}_{0}
+  \end{array} \right.
+\end{equation}
+
+Capacities of dummy edges:
+\begin{eqnarray}
+w_{i} &=&
+Disk_{i} - I_{i}^{in} - I_{i}^{out} + \frac{1 - \beta}{\alpha_{i}} \cdot
+NCPU_{i} \cdot \Delta T + Del_{i}^{out} \label{w}\\
+\overline{w}_{i} &=& I_{i}^{out} + \frac{\beta}{\alpha_{i}} \cdot NCPU_{i} \cdot \Delta T - Min_{i}^{out} \label{sigma}
+\end{eqnarray}  
+Where $\Delta T$ is a scheduling time interval, $b_{j}$ is a bandwidth of a real network link $j$, $k_{0}$ is the size of input data available at the central storage, $\overline{k}_{0}$ is the free space available at the central storage, $Disk_{i}$ and $NCPU_{i}$ are a storage size and a number of CPUs at the node $i$,  $I_{i}^{in}$ and $I_{i}^{out}$ are the initial size of input and output data at the node, $Del_{i}^{out}$ is the amount of output data that will be transferred out of the node, $Min_{i}^{out}$ is the total size of output files of running jobs. 
+
+\end{scriptsize}
+\end{frame}
+
 \begin{frame}\frametitle{Capacities of dummy edges}
 \begin{columns}[c]
 \column{.45\textwidth}
@@ -446,104 +506,72 @@ The model is being tested using GridSim.
 
 \end{frame}
 
-\section{Conclusion}
-
-\begin{frame}\frametitle{Conclusion}
-     Efficient \textbf{planning of distributed computations} is highly demanded in HENP.
-     
-  \begin{block}{Goals of the proposed model}
-    \begin{itemize}
-      \item Feasible data distribution: CPUs are not waiting for I/O 
-      \item No exceeding of network and storage capacities
-      \item Scalability and adaptability to changing environment
-    \end{itemize}
-  \end{block}
-
-  \begin{block}{Further plans}
-    \begin{itemize}
-      \item Simulations using GridSim
-      \item Evaluation using real log data: STAR data production, other HENP experiments, scalability tests
-      \item Integration into existing distributed RMS
-      \item Deployment to the data production system of the STAR experiment, testing, statistics collection 
-    \end{itemize}
-   \end{block}
-  \end{frame}
 
 
-\begin{frame}<beamer>[noframenumbering]\frametitle{The end of the presentation}
-\begin{center}
-Thank You for Your attention.
-\end{center}
-\end{frame}
 
-\section*{Bibliography}
-
-
-\begin{frame}<beamer>[noframenumbering]\frametitle{References}
-\nocite{Rudova, ACAT_cp, Makatun_cache, Zerola}
-\renewcommand*{\bibfont}{\tiny}
-\printbibliography%[notkeyword=my]
-\end{frame}
-
-\section*{Backup}
-
-\begin{frame}<beamer>[noframenumbering]\frametitle{Model details: input problem illustration}
+\section{Simulation results}
+\begin{frame}\frametitle{One node}
 \begin{figure}[h]
-	\begin{center}
-		\includegraphics [trim= 30mm 20mm 30mm 30mm , clip, angle =-90, width=0.7\textwidth]{pic/network_general.pdf}
-	\end{center}
 
-	\label{network_general}	
-\end{figure} 
-$c_{0}$ is a central storage, $c_{i}$ are computational nodes (where $i>0$), $l_{j}$ are network links, $d_{i}$ are dummy edges from computational nodes to the sink $t$, $q_{0}$ is a dummy edge leading from the source $s$ to the $c_{0}$. 
-\end{frame}
+\centering
+    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=1\textwidth]{pic/1node_relative_makespan.pdf}
 
-\begin{frame}<beamer>[noframenumbering]\frametitle{Model details: output problem illustration}
-\begin{figure}[h]
-	\begin{center}
-		\includegraphics [trim= 30mm 20mm 30mm 30mm , clip, angle =-90, width=0.7\textwidth]{pic/network_general_out.pdf}
-	\end{center}
+    \caption{Dependence of makespan on network bandwidth for one remote node with 1000 CPUs}
+    \label{fig:simulated grig}
 
-	\label{general_out}	
 \end{figure}
-	$c_{0}$ is a central storage, $c_{i}$ are computational nodes (where $i>0$), $l_{j}$ are network links, $\overline{d}_{i}$ are dummy edges from the source $t$ to computational nodes, $\overline{q}_{0}$ is a dummy edge leading from $c_{0}$ to the sink $s$.
+\end{frame}
+
+\begin{frame}\frametitle{One node}
+\begin{figure}[h]
+\centering
+    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=1\textwidth]{pic/1node_makespan_improvement.pdf}
+    \caption{Makespan improvement of proposed model compared to PUSH par and PUSH seq}
+    \label{fig:path}
+\end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{One node}
+\begin{figure}[h]
+\centering
+\includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=1\textwidth]{pic/relative_makespan_vs_cpu.pdf}
+
+    \caption{Dependence of makespan on number of CPUs at the remote node connected over 1 Gbps link.}
+\end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{One node}
+\begin{figure}[h]
+\centering
+\includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=1\textwidth]{pic/makespan_improvement_vs_cpu.pdf}
+    \caption{Makespan improvement of proposed model compared to PUSH par and PUSH seq}
+\end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{Multiple nodes}
+\begin{figure}[h]
+\centering
+\includegraphics [trim= 0mm 80mm 0mm 30mm , clip, width=.6\textwidth]{pic/grid.pdf}
+    \caption{Simulated Grid.}
+\end{figure}
 \end{frame}
 
 
-\begin{frame}<beamer>[noframenumbering]\frametitle{Model details}
-\begin{scriptsize}
+\begin{frame}\frametitle{Multiple nodes}
+\begin{figure}[h]
+\centering
+ \includegraphics [trim= 0mm 00mm 0mm 00mm , clip,       	width=\textwidth]{pic/3models_link01.png}
+    \caption{Comparison of CPU usage of three models. }
+\end{figure}
+\end{frame}
 
 
-Input problem:
-\begin{equation} 
-\label{edge_cap} 
-cap(e) = \left\{
-\begin{array}{l l} 
-b_{j} \cdot \Delta T & \text{if }e = l_{j} \in L \\ w_{i} &
-\text{if } e = d_{i} \in D\\ k_{0} & \text{if } e = q_{0} 
-\end{array} \right.
-\end{equation} 
-Output problem:
-\begin{equation}
-\label{edge_cap_out}
-cap(e) = \left\{ 
-  \begin{array}{l l}
-    b_{j} \cdot \Delta T & \text{if }e = l_{j} \in L \\
-    \overline{w}_{i} & \text{if } e = \overline{d}_{i} \in \overline{D}\\
-    \overline{k}_{0} & \text{if } e = \overline{q}_{0}
-  \end{array} \right.
-\end{equation}
-
-Capacities of dummy edges:
-\begin{eqnarray}
-w_{i} &=&
-Disk_{i} - I_{i}^{in} - I_{i}^{out} + \frac{1 - \beta}{\alpha_{i}} \cdot
-NCPU_{i} \cdot \Delta T + Del_{i}^{out} \label{w}\\
-\overline{w}_{i} &=& I_{i}^{out} + \frac{\beta}{\alpha_{i}} \cdot NCPU_{i} \cdot \Delta T - Min_{i}^{out} \label{sigma}
-\end{eqnarray}  
-Where $\Delta T$ is a scheduling time interval, $b_{j}$ is a bandwidth of a real network link $j$, $k_{0}$ is the size of input data available at the central storage, $\overline{k}_{0}$ is the free space available at the central storage, $Disk_{i}$ and $NCPU_{i}$ are a storage size and a number of CPUs at the node $i$,  $I_{i}^{in}$ and $I_{i}^{out}$ are the initial size of input and output data at the node, $Del_{i}^{out}$ is the amount of output data that will be transferred out of the node, $Min_{i}^{out}$ is the total size of output files of running jobs. 
-
-\end{scriptsize}
+\begin{frame}\frametitle{Multiple nodes}
+\begin{figure}[h]
+\centering
+\includegraphics [trim= 0mm 00mm 0mm 00mm , clip,       	width=\textwidth]{pic/3nodes_1storage_makespan_improvement.pdf}
+    \caption{Makespan improvement of proposed model compared to PUSH par and PUSH seq}
+\end{figure}
 \end{frame}
 
 
