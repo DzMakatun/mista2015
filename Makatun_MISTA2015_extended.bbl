@@ -29,8 +29,9 @@ Buyya, R., Murshed, M.: {GridSim}: A toolkit for the modeling and simulation of
   (CCPE) \textbf{14} (2002)
 
 \bibitem{KISTI-production}
-Hajdu, L., Lauret, J., Didenko, L.: {STAR} experience with automated high
-  efficiency {Grid} based data production framework at {KISTI}/{Korea}.
+Hajdu, L., Lauret, J., Didenko, L., Amol, J., Betts, W., Jang, H.J., Noh, S.Y.:
+  {STAR} experience with automated high efficiency {Grid} based data production
+  framework at {KISTI}/{Korea}.
 \newblock In: {HEPiX} Spring 2015 Workshop. Oxford University, UK (2015)
 
 \bibitem{ACAT_cp}
@@ -56,6 +57,10 @@ Zerola, M., Lauret, J., Bart\'ak, R., \v{S}umbera, M.: One click dataset
   transfer: toward efficient coupling of distributed storage resources and
   {CPU}s.
 \newblock Journal of Physics: Conference Series \textbf{368}(012022) (2012)
+
+\bibitem{KISTI}
+Korea institute of science and technology information {KISTI}.
+\newblock \url{http://en.kisti.re.kr/}
 
 \bibitem{MonAlisa}
 {MonAlisa}: Grid online monitoring data of the {ALICE} experiment.
