@@ -6,6 +6,11 @@
   \providecommand{\doi}{DOI~\discretionary{}{}{}\begingroup
   \urlstyle{rm}\Url}\fi
 
+\bibitem{STAR}
+Ackermann, K.H., et~al.: {STAR detector overview}.
+\newblock Nucl. Instrum. Meth. \textbf{A499}, 624--632 (2003).
+\newblock \doi{10.1016/S0168-9002(02)01960-5}
+
 \bibitem{Network_flows}
 Ahuja, R.K., Magnati, T.L., Orlin, J.B.: Network flows : theory, algorithms,
   and applications.
@@ -28,16 +33,51 @@ Buyya, R., Murshed, M.: {GridSim}: A toolkit for the modeling and simulation of
 \newblock The Journal of Concurrency and Computation: Practice and Experience
   (CCPE) \textbf{14} (2002)
 
+\bibitem{XSuffarage}
+Casanova, H., Legrand, A., Zagorodnov, D., Berman, F.: Heuristics for
+  scheduling parameter sweep applications in grid environments.
+\newblock In: Heterogeneous Computing Workshop, 2000.(HCW 2000) Proceedings.
+  9th, pp. 349--363. IEEE (2000)
+
+\bibitem{bookDrozdovski}
+Drozdowski, M.: Scheduling for Parallel Processing, 1st edn.
+\newblock Springer-Verlag London (2009).
+\newblock \doi{10.1007/978-1-84882-310-5}
+
+\bibitem{AdRM}
+Faerman, M., Su, A., Wolski, R., Berman, F.: Adaptive performance prediction
+  for distributed data-intensive applications.
+\newblock In: Supercomputing, ACM/IEEE 1999 Conference, pp. 36--36. IEEE (1999)
+
 \bibitem{KISTI-production}
 Hajdu, L., Lauret, J., Didenko, L., Amol, J., Betts, W., Jang, H.J., Noh, S.Y.:
   {STAR} experience with automated high efficiency {Grid} based data production
   framework at {KISTI}/{Korea}.
 \newblock In: {HEPiX} Spring 2015 Workshop. Oxford University, UK (2015)
 
+\bibitem{hwang2013distributed}
+Hwang, K., Dongarra, J., Fox, G.: Distributed and Cloud Computing: From
+  Parallel Processing to the Internet of Things.
+\newblock Elsevier Science (2013)
+
 \bibitem{alea2}
 Klus\'{a}\v{c}ek, D., Rudov\'{a}, H.: Alea 2 -- job scheduling simulator.
 \newblock In: Proceedings of the 3rd International ICST Conference on
   Simulation Tools and Techniques (SIMUTools 2010). ICST (2010)
+
+\bibitem{Klusacek}
+Klusáček, D., Rudová, H.: A metaheuristic for optimizing the performance and
+  the fairness in job scheduling systems.
+\newblock In: Y.~Laalaoui, N.~Bouguila (eds.) Artificial Intelligence
+  Applications in Information and Communication Technologies, \emph{Studies in
+  Computational Intelligence}, vol. 607, pp. 3--29. Springer International
+  Publishing (2015).
+\newblock \doi{10.1007/978-3-319-19833-0\_1}
+
+\bibitem{Magoules}
+Magoules, F., Nguyen, T.M.H., Yu, L.: Grid Resource Management: Towards Virtual
+  and Services Compliant Grid Computing, 1st edn.
+\newblock CRC Press, Inc., Boca Raton, FL, USA (2008)
 
 \bibitem{ACAT_cp}
 Makatun, D., Lauret, J., Rudov\'a, H., {\v{S}}umbera, M.: Planning for
@@ -50,6 +90,25 @@ Ranganathan, K., Foster, I.: Decoupling computation and data scheduling in
   distributed data-intensive applications.
 \newblock 11th {IEEE} International Symposium on High Performance Distributed
   Computing pp. 352--358 (2002)
+
+\bibitem{StorageAffinity}
+Santos-Neto, E., Cirne, W., Brasileiro, F., Lima, A.: Exploiting replication
+  and data reuse to efficiently schedule data-intensive applications on grids.
+\newblock In: Proceedings of the 10th International Conference on Job
+  Scheduling Strategies for Parallel Processing, JSSPP'04, pp. 210--232.
+  Springer-Verlag, Berlin, Heidelberg (2005).
+\newblock \doi{10.1007/11407522\_12}.
+\newblock \urlprefix\url{http://dx.doi.org/10.1007/11407522\_12}
+
+\bibitem{sinnen2007task}
+Sinnen, O.: Task Scheduling for Parallel Systems.
+\newblock Wiley Series on Parallel and Distributed Computing. Wiley (2007)
+
+\bibitem{srinivasan2002selective}
+Srinivasan, S., Kettimuthu, R., Subramani, V., Sadayappan, P.: Selective
+  reservation strategies for backfill job scheduling.
+\newblock In: Job Scheduling Strategies for Parallel Processing, pp. 55--71.
+  Springer (2002)
 
 \bibitem{GridSimNetwork}
 Sulistio, A., Poduval, G., Buyya, R., Tham, C.K.: Constructing a grid
@@ -82,6 +141,12 @@ Portable batch system ({PBS}).
 \bibitem{Xrootd}
 Xrootd.
 \newblock \url{http://xrootd.slac.stanford.edu/}
+
+\bibitem{JGraphT}
+{JGraphT} a free java graph library that provides mathematical graph-theory
+  objects and algorithms.
+\newblock online (2015).
+\newblock \urlprefix\url{http://jgrapht.org/}
 
 \bibitem{MonAlisa}
 {MonAlisa}: Grid online monitoring data of the {ALICE} experiment.

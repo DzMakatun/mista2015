@@ -1420,7 +1420,8 @@ to\hsize{\vrule\kern3pt\vbox{\kern3pt
 \def\thisbottomragged{\def\@textbottom{\vskip\z@ plus.0001fil
 \global\let\@textbottom\relax}}
 % 6th Jan: This line removed for MISTA 2009/2011/2013 to supress page numbers appearing
-%\pagestyle{headings}
+%to return page numberring
+\pagestyle{headings}
 \pagenumbering{arabic}
 \if@twocolumn
    \twocolumn

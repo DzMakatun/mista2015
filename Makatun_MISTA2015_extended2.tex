@@ -41,7 +41,6 @@
 
 
 \begin{document}
-
 \title{Model for planning of distributed data production}
 
 \author{Dzmitry Makatun         \and
@@ -71,7 +70,7 @@
 \maketitle
 
 \begin{abstract}
-Modern experiments in High Energy and Nuclear Physics heavily rely on distributed computations using multiple computational facilities across the world. However, existing job scheduling approaches do not always provide optimal solutions for computations typical in HENP. One of the major factors limiting the computation performance is latency caused by access to remote data. In this paper we propose a model of distributed data production, where all the files from a single source has to be processed once and transferred back. In our approach a central planer defines how much data of each type (input/output) should be transferred over each network link in order to maximize the computational throughput. Such plans are created periodically for a fixed planning time interval knowing the structure of the network, its bandwidth and current status of computational sites (number of available CPUs, disk storage and the amount of input/output data). The plan is executed by "handlers" acting at each computational site which participates in the data processing. 
+Modern experiments in High Energy and Nuclear Physics (HENP) heavily rely on distributed computations using multiple computational facilities across the world. However, existing job scheduling approaches do not always provide optimal solutions for computations typical in HENP. One of the major factors limiting the computation performance is latency caused by access to remote data. In this paper we propose a model of distributed data production, where all the files from a single source has to be processed once and transferred back. In our approach a central planner defines how much data of each type (input/output) should be transferred over each network link in order to maximize the computational throughput. Such plans are created periodically for a fixed planning time interval knowing the structure of the network, its bandwidth and current status of computational sites (number of available CPUs, disk storage and the amount of input/output data). The plan is executed by "handlers" acting at each computational site which participates in the data processing. 
 
 The simulations based on log records from the data production framework of the experiment STAR have shown that the proposed model systematically provides a better performance compared to simulated traditional techniques. Under certain conditions (such as limited bandwidth and/or existence of alternative transfer paths) the performance improvement can reach 26\%. The detailed model description, setup and results of simulations are presented in this paper.
 \end{abstract}
@@ -83,9 +82,8 @@ Bang. Collisions of heavy ions occur millions of times per second inside the
 detector, producing tens of petabytes of raw data each year. All the raw data
 has to be processed in order to reconstruct physical events which are
 further analyzed by scientists. This process is called data production.  Like
-any other modern experiment in High Energy and Nuclear Physics (HENP), STAR intends to rely on
-distributed data processing, making use of several remote computational sites
-(for some experiments this number can scale up to several hundreds).
+any other modern experiment in High Energy and Nuclear Physics (HENP), STAR \cite{STAR} relies on distributed data processing, making use of several remote computational sites
+(for some experiments this number can scale up to multiple tens).
 
 When running data intensive applications on distributed computational
 resources long I/O overheads may be observed as access to remotely stored data
@@ -119,21 +117,40 @@ network structure, bandwidth, storage and CPU slots available. This will allow
 local schedulers to process jobs and have CPUs busy all the time while not
 exceeding disk and network capacities.
 
+The general methods for scheduling parallel jobs with communications delays are extensively described in  \cite{bookDrozdovski} and \cite{sinnen2007task}. A compact description of widely used job scheduling policies can be found in \cite{Klusacek} and \cite{srinivasan2002selective}. Those policies, such as First Come First Served (FCFS), conservative backfilling (CONS), aggressive backfilling (EASY), selective backfilling and \textit{etc}., are focused on maximizing CPU throughput and fairness to users.  However, the above strategies are dedicated to manage a single computational cluster where data transfer overhead is not a significant factor. Also, for the data production workflow such metrics as fairness to users is irrelevant, since all the jobs are typically submitted by the same user.
+
+A wide perspective of modern concepts and challenges in distributed computing can be found in \cite{hwang2013distributed}. An overview of the algorithms for scheduling of data-intensive application in a computational Grid is provided in \cite{Magoules}.  %pp181-183 
+Let us discuss the existing algorithms with respect to the considered use case.
+
+%Bandwith-centric allocartion ~\cite{Trees},  +
+%Adaptive Regression Method \cite{AdRM}, +
+%XSuffarage \cite{XSuffarage},  +
+%(Foster) Globus_scheduler \cite{Globus_scheduler} +
+%storage affinity \cite{StorageAffinity}, 
+%DAG schedulling 
+%
+
+The Adaptive Regression Method (AdRM) \cite{AdRM} is focused on predicting the performance of data transfer operations in network-bound distributed data-intensive applications in a multi-user grid environment. As stated by the authors, those prediction can be used for comparison of candidate schedules of computational jobs, however, an exact scheduling algorithm is not presented in the work. The expected improvement is based on optimal selection of resources for scheduled tasks and their order. While this can be beneficial in the multi-user environment, where the files being processed have various possible sources and destinations, in data production all the computational tasks are equivalent  and  available resources are typically heavily loaded most of the time, for this reason, swapping particular computational jobs between resources and changing their order can not improve an overall performance.
+
 Optimization of data intensive applications in Grid was studied
 in~\cite{Globus_scheduler}. In this work an optimization was achieved by
 replication of highly used files to more sites while the jobs were executed
 where their input data is located. However, this is not the case for data
-production, when each file has to be processed once. 
+production, when each file has to be processed once. Similarly, the Storage Affinity  \cite{StorageAffinity} approach exploits data re-utilization to improve the performance of the application in Grid. Again, as stated before, the data reuse is impossible for the data production problem.
+
+In \cite{XSuffarage}, the authors have modified existing heuristics  to schedule parameter sweep applications with file I/O requirements (e.g. Monte Carlo simulations), and studied an impact of inaccurate performance prediction on scheduling. The authors consider job scheduling on heterogeneous resources (Grid) taking data transfer overhead for each job into account. While the input transfer overhead was estimated knowing an end-to-end connection speed, neither the file transfers were scheduled at network links, nor actual network topology was taken into account. In case of data production in HENP, uncoordinated data transfers may oversaturate the network capacity which leads to overall degraded performance. For this reason in our research we consider network load planning.
 %
 Explicit model distributing jobs over a Grid with respect to the network
 bandwidth was proposed in~\cite{Trees}. The network structure of the Grid was
 modeled as a tree and all the files were assumed to be of the same size and
 processing time. In our study we do not limit the network topology to trees,
-and assume fluctuations of job parameters. 
+and assume fluctuations of job parameters. This factor has an increased value, since with the constantly increasing number of participating sites the hierarchical structure (implied by the tree network topology) of the Grid in HENP is not strongly held anymore. Moreover, making use of connections between computational nodes at the same network distance from the central storage can improve the overall throughput, as it will be shown in Section \ref{simulations} of this paper.
 
-In this paper we propose a model of distributed data production, where all the files from a single source has to be processed once and transferred back. Each data processing job requires exactly one CPU and each CPU executes a single job at a time. In our approach a central planer defines how much data of each type (input/output) should be transferred over each network link in order to maximize the computational throughput. Such plans are created periodically for a fixed planning time interval knowing the structure of the network, its bandwidth and current status of computational sites (number of available CPUs, disk storage and the amount of input/output data). The logic of the planer is based on the network flow maximization problem which has a polynomial complexity, and due to that meets the need for scalability and reasonably fast plan generation. The plan is executed by "handlers" acting at each computational site which participates in the data processing. The "handler" is responsible for transferring data to other computational sites with respect to the global plan and for submission of jobs to CPUs. 
+To summarize, existing scheduling policies for data-intensive applications provide performance optimization, which is based on either data replication, difference in job requirements to the resources or presence of multiple users with different connectivity to the Grid. However, those assumptions are inapplicable to the data production case. Moreover, many of the models use a simplified network model, which is extremely crucial in the case when the network bandwidth becomes the main bottleneck. For that reason, none of the existing algorithms meets the specifics of the modern data production in HENP.
+
+In this paper we propose a model of distributed data production, where all the files from a single source has to be processed once and transferred back. Each data processing job requires exactly one CPU and each CPU executes a single job at a time. In our approach a central planner defines how much data of each type (input/output) should be transferred over each network link in order to maximize the computational throughput. Such plans are created periodically for a fixed planning time interval knowing the structure of the network, its bandwidth and current status of computational sites (number of available CPUs, disk storage and the amount of input/output data). The logic of the planner is based on the network flow maximization problem which has a polynomial complexity, and due to that meets the need for scalability and reasonably fast plan generation. After the plan is create by the central planner, it is executed by "handlers" (dedicated services) acting at each computational site which participates in the data processing. The "handler" is responsible for transferring data to other computational sites with respect to the plan and for the submission of jobs to CPUs. 
  
-Our contribution can be summarized as an analysis of distributed data production in HENP; a development of a new model which, in contrast to the known models, considers both job scheduling and data transfers and has a polynomial complexity due to usage of the network flow maximization approach; implementation of the planer logic; implementation of a simulating environment based on data obtained from the real data production framework of a HENP experiment; and verification of the model with simulations, which have shown a significant improvement compared to currently used scheduling techniques. 
+As a summary of our contribution, we can state that, we have performed an analysis of distributed data production in HENP and development a new model which considers both job scheduling and data transfers. In contrast to the known approaches, our model takes advantage of specifics of distributed data production and includes a realistic network model. It is based on the network flow maximization approach which has a polynomial complexity. We have implemented the global data production planner based on our model and a simulating environment using a standard Grid simulation framework (GridSim). We have verified the model with simulations based on data obtained from the real data production framework of a HENP experiment, which have shown a significant improvement compared to currently used scheduling techniques. 
 
 The paper is organized as follows: in Section \ref{problem} we provide the detailed problem description, the Section \ref{modeling} presents our mathematical model, then the algorithms for a plan generation are given in the Section \ref{solve}, the Section \ref{plan-execution} describes how the plan execution is implemented, and, finally, the Section \ref{simulations} provides a description of simulation setup, used data, simulated jobs scheduling approaches and the obtained results. 
 
@@ -141,16 +158,18 @@ The paper is organized as follows: in Section \ref{problem} we provide the detai
 
 \section{Problem description}
 \label{problem}
-Due to a data level of parallelism a typical workflow of HENP computation
-consists of independent jobs using one CPU, one input and one output file. We
-assume there is a local scheduler running at each site, which picks a new
-input file to process from the local storage of that site each time when a CPU becomes
-free. Input data must be transferred from the central storage
-to each site in such a manner that at the every moment of time there is enough
-input files at each site to keep all the available CPUs busy while not
-exceeding the local storage and network throughput. Another task
-is to transfer the output files back to central storage, cleaning each local
-storage for the new input.
+I our model we consider data processing in a computational Grid, which is a collection of computer resources from multiple locations.  We focus on a specific type of data processing which is typical for computations in High Energy Physics and is called a data production. In general, our goal is to maximize a computational throughput of such data processing. In this section we will describe specifics and important elements of the considered problem, which are a central storage, computational nodes, interconnecting network and computational jobs.
+
+The \textit{central storage} is the data storage where all the data of the physical experiment is being persistently stored. It is usually located at the so called Tier-0 site, which is the main computational facility of the experiment.  The raw data from the detector is being automatically archived to the central storage in form of separate files (typically of several Gigabytes of size) and after that it can be copied to other destinations for processing. We refer them as \textit{input files}. The outcome of the processing is called reconstructed data, and also consists of separate files (several Gigabytes of size) which we refer as \textit{output files} in our model. All the reconstructed data are being persistently stored at the central storage as well. In most of the experiments the central storage is implemented as a tape storage coupled with a faster disk one, however its internal mechanics is beyond the scope of the model. In order to address possible bottlenecks related to the central storage we consider two values: $k_{0}$ is the total size of currently available input files and $\overline{q}_{0}$ is the currently available free space to store new reconstructed data (output files).
+
+In our model a \textit{computational node} is one or a set of closely connected machines (also can be referred as a computer cluster, or site) which has a fast access to a common data storage (referred as a \textit{local disk}) and a shared connection to the outer network. A computational facility of a scientific institution is an example. Often, an institution provides  access to only a fraction of its computational resources (i.e. a fixed number of CPUs and limited storage size) to be used by an experiment. In such case, a set of those granted resources can be considered as a computational node. The key principle to identify a set of machines as a computational node is that they can access a given \textit{local disk} with a latency which is negligible compared to their access to other storages (like the central storage) in the Grid. We assume that there is a common job scheduling system which allows to submit jobs to all of the CPUs of the machines combined to a node. We also assume that all of the CPUs at a node have the same processing characteristics. Each CPU is considered as a separate processing element, which can correspond to a single core in modern architectures. CPUs are modeled as a space-shared resource, which means that each CPU can execute a single job at a time. In our model each computational node $i$ is described by the number of CPUs $NCPU_{i}$ and available local disk space $Disk_{i}$. Also, the data on the node status can be obtained from its monitoring system, including the number of CPUs occupied by jobs $NCPU_{i}^{busy}$, current free space at the local disc $F_{i}$, amount of available input $I_{i}^{in}$ and output $I_{i}^{data}$ data and \textit{etc}.
+
+The computational nodes interconnected to each other and to the central storage with network links of given bandwidth $b_{j}$ ($j$ is an id of a link) so that they form a Grid, which can be described a by a weighted graph. Obviously, the graph must be connected. Such graph can represent a realistic network topology, where the network routers can be represented by computational nodes with zero number of CPUs and local disc size. In our model we consider only the network propagation latency, which can be calculated as a size of transferred data divided by the bandwidth of the link. In realistic case, the network links are full-duplex, which implies the same bandwidth in both directions, however, this is not a strong requirement for our model.
+
+The data production in HENP has a data level of parallelism, which means that it can be (and actually is) divided into independent \textit{computational jobs} applying the same processing on different subsets of data. In other words, each computational job has its unique input file ,uses a single CPU and produces a unique output file. There is a one to one relation between jobs, input and output files in data production. In our model the size of input file of a job $j$ is denoted as $InSize_{j}$, the size of output file is $OutSize_{j}$ and the job duration is $p_{j}$. Only the size of input file is known in advance, before the job is finished. However, the two other parameters are related to it. We can define two coefficients using the following expressions: $p_{j} = \alpha_{ji} \cdot InSize_{j}$ and $OutSize_{j} = \beta{j} \cdot InSize_{j}$, where $i$ is an id of a processing node. Since all the jobs perform the similar type of processing, knowing an average values ($\alpha_{i}$ and $\beta$) for those coefficients we can estimate the size of output and a duration of a particular job. From the scheduling system view, all the data production jobs are submitted by a single production user, for this reason such metric as "fairness to users" is not related to the considered problem. Also, there is no any requirement on the order of particular jobs. 
+
+
+As mentioned before, the main goal the maximization of overall computational performance. In real life the performance can be estimated by such parameters as a total CPU utilization (given that there is no job duplication and we do not count waiting cycles) or makespan of processing a given set of input files (a dataset).
 
 \section{Model based on network flow maximization}
 \label{modeling}
@@ -208,7 +227,7 @@ the solution for the input transfer problem as $f^{in}(e)$.
 	\begin{center}
 		\includegraphics [trim= 30mm 20mm 30mm 30mm , clip, angle =-90, width=0.5\textwidth]{pic/network_general.pdf}
 	\end{center}
-	\caption{Data production Grid represented as an capacitated $\{s,t\}$ network for input transfer planning (general case). $c_{0}$ is a central NFS storage (Tier-0), $c_{i}$ are computational nodes (where $i>0$), $l_{j}$ are network links, $d_{i}$ are dummy edges from computational nodes to the sink $t$, $q_{0}$ is a dummy edge leading from the source $s$ to the $c_{0}$. }
+	\caption{Data production Grid represented as an capacitated $\{s,t\}$ network for input transfer planning (general case). $c_{0}$ is a central storage, $c_{i}$ are computational nodes (where $i>0$), $l_{j}$ are network links, $d_{i}$ are dummy edges from computational nodes to the sink $t$, $q_{0}$ is a dummy edge leading from the source $s$ to the $c_{0}$. }
 	\label{network_general}
 \end{figure}  
 
@@ -241,10 +260,12 @@ We denote the solution for the output transfer problem as $f^{out}(e)$.
 	\begin{center}
 		\includegraphics [trim= 30mm 20mm 30mm 30mm , clip, angle =-90, width=0.5\textwidth]{pic/network_general_out.pdf}
 	\end{center}
-	\caption{Data production Grid represented as an capacitated $\{t,s\}$ network for output transfer planning (general case). $c_{0}$ is a central NFS storage (Tier-0), $c_{i}$ are computational nodes (where $i>0$), $l_{j}$ are network links, $\overline{d}_{i}$ are dummy edges from the source $t$ to computational nodes, $\overline{q}_{0}$ is a dummy edge leading from $c_{0}$ to the sink $s$. }
+	\caption{Data production Grid represented as an capacitated $\{t,s\}$ network for output transfer planning (general case). $c_{0}$ is a central storage, $c_{i}$ are computational nodes (where $i>0$), $l_{j}$ are network links, $\overline{d}_{i}$ are dummy edges from the source $t$ to computational nodes, $\overline{q}_{0}$ is a dummy edge leading from $c_{0}$ to the sink $s$. }
 	\label{general_out}	
 \end{figure}
+
 \subsection{Capacities of dummy edges}
+
 Let us consider data production jobs which perform the same type of processing
 on the same type of files. Duration $p_{j}$ of a job $j$  processing an input
 file of size $InSize_{j}$ at a node $i$ is $p_{j} = \alpha_{i} \cdot
@@ -255,31 +276,38 @@ $OutSize_{j} = \beta \cdot InSize_{j}$.  During the time interval $\Delta T$ a
 node $i$ with $NCPU_{i}$  of CPUs  will process $\frac{1}{\alpha_{i}} \cdot
 NCPU_{i} \cdot \Delta T$ of input data and will produce
 $\frac{\beta}{\alpha_{i}} \cdot NCPU_{i} \cdot \Delta T$ of output data.
-Using constraints on storage space, we can define the maximal amount of input
-$w_{i}$ and output $\overline{w}_{i}$ data which can be transferred to/from a
-node $i$:
-%
-\begin{eqnarray}
-w_{i} &=&
-Disk_{i} - I_{i}^{in} - I_{i}^{out} + \frac{1 - \beta}{\alpha_{i}} \cdot
-NCPU_{i} \cdot \Delta T + Del_{i}^{out} \label{w}\\
-\overline{w}_{i} &=& I_{i}^{out} + \frac{\beta}{\alpha_{i}} \cdot NCPU_{i} \cdot \Delta T - Min_{i}^{out} \label{sigma}
-\end{eqnarray}  
-%
-where $Disk_{i}$ is available disk space at the node $i$, $I_{i}^{in}$ and
-$I_{i}^{out}$ are the initial size of input and output data at a local storage
-respectively, $Del_{i}^{out}$ is the amount of output data that will be
-transferred out of the node and deleted from its storage during $\Delta T$;
-$Min_{i}^{out}$ is the total size of output files which cannot be transferred
-because the jobs which produce them are not finished (output files of running
-jobs). 
 
-In the Eqn.~\ref{w}, $Del_{i}^{out}$ is equal to the amount of data which will
-be transferred from a node $c_{i}$, i.e., the solution to the output transfer
-problem $f^{out}(\overline{d}_{i})$. In the Eqn.~\ref{sigma}, $\Delta T$ and
-$Min_{i}^{out}$ are parameters of the scheduler. The other values used in
-Eqns.~\ref{w}--\ref{sigma} can be obtained from monitoring data right before
-each planning iteration.
+Capacities of dummy edges define the maximum amount of input/output data that can be transferred to/from the node. Let us consider transfer of output files first. Let $I_{i}^{out}$ be the initial size of output data at a local storage which are ready to be transferred (output data of previously finished jobs). We also need to estimate the amount of new output data that will be created during the planing time interval $\Delta T$ (output data of jobs that will finish during $\Delta T$). If most of the CPUs at the node are saturated, then this value can be estimated as $\frac{\beta}{\alpha_{i}} \cdot NCPU_{i} \cdot \Delta T$. In the opposite case, if not all the CPUs are busy, then the value is limited by the total size of output files of currently running jobs $C_{i}^{out}$. To find the bottleneck value, we have to select the smallest value, and therefor, the final formula of the capacity of dummy edges for output problem is:
+\begin{eqnarray}
+\overline{w}_{i} &=& I_{i}^{out} + \min(\frac{\beta}{\alpha_{i}} \cdot NCPU_{i} \cdot \Delta T,\ \  C_{i}^{out}) \label{sigma}
+\end{eqnarray}  
+
+Let us denote the available free disk space at the node $i$ as $F_{i}$. In order to avoid overfilling of the local disk, we need to set an upper limit $\delta$ for a planed disk usage. That ensures that during the plan execution there is always enough space for an output file of a new job or for a new incoming file. This is especially important, since job duration and file sizes can fluctuate from average values which are used for plan creation. In other words, we assume that there is a buffer of size $Disk_{i} \cdot (1 - \delta)$ which should be planned to remain free.
+
+The amount of input data which can be transferred to the processing node is limited by two factors: size of the local disk and the CPU throughput. Obviously, we should not transfer to a node more data that it can store and process, but at the same time we should aim to reach the peak throughput of the system. For this reason, it is important to identify, which factor is a bottleneck in any given case. We have to consider two possible cases: when all the CPUs at the node are saturated ($NCPU_{i}^{busy} = NCPU_{i}$) and when there are free CPU slots ($NCPU_{i}^{busy} < NCPU_{i}$). 
+
+In the first case the maximal amount of data that we can store to the disk is its free space minus buffer size ($F_{i} -  (1 - \delta) \cdot Disk_{i}$). At the same time the total size of preplaced input files $I_{i}^{in}$ should not be greater then the total size of files which are currently processed ($C_{i}^{in}$). 
+
+In the second case, it is important to notice, that if there are free CPUs at the node, each incoming input file will be immediately submitted for processing, creating a reservation for a new output file of size  $OutSize_{j} = \beta \cdot InSize_{j}$. For this reason, the constraint on the storage size gives us $\frac{F_{i} -   (1 - \delta) \cdot Disk_{i}}{1 + \beta}$. From the other hand, in order to saturate unused CPUs, we need to transfer at least one file for each of them. If an average size of an input file is $<f_{in}>$, then the required amount of input data would be $NCPU_{i} \cdot <f_{in}> - I_{i}^{in}$. 
+
+In both cases, ether $NCPU_{i}^{busy} = NCPU_{i}$ or $NCPU_{i}^{busy} < NCPU_{i}$ we should select a minimal value between the storage and CPU constrains, in order to find the bottleneck. The above statements lead us to the final expression for the capacity of the dummy edges for the input problem:
+
+\begin{equation}
+w_{i} =\left\{ 
+\begin{array}{l l}
+\min(F_{i} -  (1 - \delta) \cdot Disk_{i} , 
+C_{i}^{in} - I_{i}^{in}) & \ \ \text{if }  NCPU_{i}^{busy} = NCPU_{i} \\
+\min(\frac{F_{i} -   (1 - \delta) \cdot Disk_{i}}{1 + \beta},
+NCPU_{i} \cdot <f_{in}> - I_{i}^{in}) & \ \ \text{if }  NCPU_{i}^{busy} < NCPU_{i}
+
+ \end{array} \right.
+\label{w}
+\end{equation}
+
+%
+
+In the Eqn.~\ref{sigma} and \ref{w} $\Delta T$ and $\delta$ are parameters of the scheduler. The other values used in
+Eqns.~\ref{sigma}--\ref{w} can be obtained from monitoring data right before each planning iteration.
 
 \section{Solving Procedure}
 \label{solve}
@@ -298,7 +326,6 @@ solve the problem:
 \begin{enumerate}
 \item Calculate values for $\overline{w}_{i}$ using Eqn.~\ref{sigma}.
 \item Solve the problem for output data flows to obtain $f^{out}(e)$.
-\item Using Eqn.~\ref{w} and $Del_{i}^{out} = f^{out}(\overline{d}_{i})$ calculate $w_{i}$.
 \item For real links $l \in L$ reduce the capacity by the amount which is used by output transfers: $cap(l_{j}) = b_{j} \cdot \Delta T - f^{out}(l_{j})$.
 \item Solve the problem for input transfers with $w_{i}$ and $cap(l_{j})$ defined in previous steps. Find input data flows $f^{in}(e)$.
 \end{enumerate}
@@ -335,7 +362,7 @@ When processing of an input file starts, the handler makes a reservation for the
 In our experiments the "Grid Simulation Toolkit for Resource Modelling and Application Scheduling for Parallel and Distributed Computing" (GridSim) \cite{GridSim} was used for realistic simulations of distributed data production. It is a discrete-event simulation toolkit which provides extensive models of computational clusters, job scheduling and execution, network, data transferring and etc. It was developed by the GRIDS Lab of the University of Melbourne. A research group at the Faculty of Informatics at the Masaryk University at Brno has a previous experience of using the GridSim for simulations of job scheduling problems \cite{alea2}.
 We also have implemented an additional functionality for global plan execution, statistics collection and a simple storage management   on top of the GridSim package for our simulations.
 
-The simulations were running under Windows 8 64-bit with java 1.8.0\_60 (64b) on a computer with Intel i5 (4 cores) 2.50 GHz processor and 6 GB of memory installed. 
+The planner was implemented in Java using a JGraphT \cite{JGraphT} library which provides Edmonds–Karp algorithm \cite{Network_flows} for solving the network flow maximization problem. The simulations were running under Windows 8 64-bit with java 1.8.0\_60 (64b) on a computer with Intel i5 (4 cores) 2.50 GHz processor and 6 GB of memory installed. 
 
 \subsection{Simulation setup}
 A remote data production of the experiment STAR was ongoing at the computational facility of the Korea Institute of Science and Technology Information (KISTI)\cite{KISTI} for seven months in 2014. The log database of the data production framework contains information on job durations, sizes of input and output. Records of 60\,000 computational jobs were taken from log and used as input for our simulations. The average parameters of this set of jobs are provided in Table \ref{tab:jobs}.
@@ -382,9 +409,9 @@ An important consequence of the difference between the two modes appears when an
 In order to test our planning model against other approaches, we have simulated distributed data production under the \textit{scheduling approaches} listed below. 
 \begin{itemize}
 \label{scenarios}
-\item \textbf{PLANER:}  This approach uses the global planing described in our model. The \textit{sequential transfer network} mode is used as the preferable one. 
+\item \textbf{PLANNER:}  This approach uses the global planing described in our model. The \textit{sequential transfer network} mode is used as the preferable one. 
 \item \textbf{PUSH\_par:} Whenever there is a free CPU in the Grid, the central storage sends next input file to the computational node with this free CPU. When a node receives an input file, it starts processing, and after it is finished it sends the output file back to the central storage. When the central storage receives an output file it is informed that a CPU became free at the sender node. In such a manner, the central storage keeps sending input files until all the data are processed. The shortest network path is used for file transfers. The \textit{parallel transfer network} mode is used here, which models uncoordinated concurrent access to remote files by simultaneous jobs. This scheduling approach is the closest to the distributed data production setup in many HENP experiments, in particular, data production at KISTI for the STAR experiment \cite{KISTI-production}. 
-\item \textbf{PUSH\_seq:} The job scheduling in performed exactly as in the previous approach, but the \textit{sequential transfer network} mode is used. The main purpose of these simulations is to study the effects of sequential file transferring on the data production and, also, to estimate which part of the performance improvement in the PLANER approach is achieved by the sequential transferring alone.
+\item \textbf{PUSH\_seq:} The job scheduling in performed exactly as in the previous approach, but the \textit{sequential transfer network} mode is used. The main purpose of these simulations is to study the effects of sequential file transferring on the data production and, also, to estimate which part of the performance improvement in the PLANNER approach is achieved by the sequential transferring alone.
 \item \textbf{no\_network:} Again, the job scheduling is the same as in two previous approaches, but the network is not considered here. The production is performed as if all the CPUs are aggregated at the single site and can read/write the data directly from/to the storage with no latency. These simulations serve as a base case for comparison. It allows to estimate the limit for the processing makespan, and the influence of the transfer latency. Obviously, none of the other scheduling approaches can process the data faster than the one with no network delay.
 \end{itemize}
 
@@ -393,51 +420,50 @@ In the first set of simulations we aimed to reproduce the remote data production
 
 %---------------Bandwidth-------------------------
 
-The Figures \ref{1node_relative_makespan} and \ref{1node_makespan_improvement} present results of simulations where the number of CPUs at the remote site was 1\,000, the size of its storage was 12 TB and the network bandwidth was changing from 50 Mbps to 2 Gbps in different simulation runs. A subset of the last 7\,000 job records from the data production framework was used (the total size of input files was approximately $25$ TB). The plot at Figure \ref{1node_relative_makespan} shows the dependence of makespan on network bandwidth for three scheduling approaches (PLANER, PUSH\_par and PUSH\_seq, see Section \ref{scenarios}). For convenience, the makespan of these approaches is presented as a ratio to the makespan of the no\_network simulation which was 9 days, 15 hours, 39 minutes and 13 seconds. As it can be observed from the plot, when the network bandwidth is 2 Gbps or greater, the I/O transfer latency for 1000 CPUs becomes negligible compared to the job duration, for that reason all the scheduling models deliver the makespan close to the no\_network case. In the opposite case, when the network bandwidth is smaller then 300 Mbps, it is not sufficient to saturate available CPUs with data, as the result the makespan increases dramatically for all the scheduling policies. Between those two extreme cases, the proposed model can provide a significant improvement (up to 26\%) compared to the scheduling approach used in practice (PUSH\_par). Also in the case, when the network bandwidth is not sufficient to keep all the CPUs busy, the "PLANER" model permanently provides a better performance. The makespan improvement of the proposed model against others is provided at Figure \ref{1node_makespan_improvement}. Using this plot one can conclude that in the case of a single remote site the main improvement is achieved due to sequential file transferring, while transferring file in advance encounters for up to 4 \% of makespan improvement.
+The Figures \ref{1node_relative_makespan} and \ref{1node_makespan_improvement} present results of simulations where the number of CPUs at the remote site was 1\,000, the size of its storage was 12 TB and the network bandwidth was changing from 50 Mbps to 2 Gbps in different simulation runs. A subset of the last 7\,000 job records from the data production framework was used (the total size of input files was approximately $25$ TB). The plot at Figure \ref{1node_relative_makespan} shows the dependence of makespan on network bandwidth for three scheduling approaches (PLANNER, PUSH\_par and PUSH\_seq, see Section \ref{scenarios}). For convenience, the makespan of these approaches is presented as a ratio to the makespan of the no\_network simulation which was 9 days, 15 hours, 39 minutes and 13 seconds. As it can be observed from the plot, when the network bandwidth is 2 Gbps or greater, the I/O transfer latency for 1000 CPUs becomes negligible compared to the job duration, for that reason all the scheduling models deliver the makespan close to the no\_network case. In the opposite case, when the network bandwidth is smaller then 300 Mbps, it is not sufficient to saturate available CPUs with data, as the result the makespan increases dramatically for all the scheduling policies. Between those two extreme cases, the proposed model can provide a significant improvement (up to 26\%) compared to the scheduling approach used in practice (PUSH\_par). Also in the case, when the network bandwidth is not sufficient to keep all the CPUs busy, the PLANNER model permanently provides a better performance. The makespan improvement of the proposed model against others is provided at Figure \ref{1node_makespan_improvement}. Using this plot one can conclude that in the case of a single remote site the main improvement is achieved due to sequential file transferring, while transferring file in advance encounters for up to 4 \% of makespan improvement.
 
 \begin{figure}
 \centering
 \begin{minipage}{1\textwidth}
 \centering
-    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=1\textwidth]{pic/1node_relative_makespan.pdf}
+    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=.7\textwidth]{pic/1node_relative_makespan2.pdf}
     \caption{Dependence of the data production makespan on the network bandwidth using a single remote node. The number of CPUs at the remote site was 1\,000, the size of its storage was 12 TB, a set of 7\,000 job records from the data production framework was used as input for simulations. The makespan is presented as a ratio to the makespan of the no\_network simulation which was 9 days, 15 hours, 39 minutes and 13 seconds.}
     \label{1node_relative_makespan}
-\end{minipage}\hspace{1pc}%
+\end{minipage}\hspace{3mm}%
+
 \begin{minipage}{1\textwidth}
 \centering
-    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=1\textwidth]{pic/1node_makespan_improvement.pdf}
+    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=.7\textwidth]{pic/1node_makespan_improvement.pdf}
     \caption{A makespan improvement of the proposed model compared to other simulated scheduling approaches. The number of CPUs at the remote site was 1\,000, the size of its storage was 12 TB, a set of 7\,000 job records from the data production framework was used as input for simulations.}
     \label{1node_makespan_improvement}
 \end{minipage} 
 \end{figure}
-
 %--------------------CPUs-------------------------------
-Another set of simulations was performed with a fixed network bandwidth (1 Gbps) and a changing number of CPUs at the remote site (1\,000 -- 6\,000). The size of storage was adjusted to the number of CPUs (10 TB for every 1\,000 CPUs). The set of 60\,000 computational jobs was used for these simulations. The plot at Figure \ref{relative_makespan_vs_cpu} shows the dependence of makespan on the number of CPUs at the remote site for all scheduling approaches, this time makespan is presented as a ratio to the makespan of no\_network approach with 1\,000 CPUs which is 116 days, 4 hours, 16 minutes and 2 seconds. With growing number of CPUs the makespan decreases inversely linearly for the no\_network case, while for the other strategies the limited network bandwidth decreases the gain from using more CPUs. For 1\,000 CPUs the network bandwidth of 1 Gbps does not produce any significant latency and all the scheduling algorithms produce the same result. At the right side of the plot, when the number of CPUs is 6\,000, the performance is limited by the network bandwidth and additional CPUs do not decrease the makespan, and, consequently, none of the scheduling policies can provide any improvement. But for a number of CPUs between 1\,000 and 6\,000 the proposed model achieves a better makespan then the one currently used in data production (PUSH\_par), allowing to use more CPUs efficiently. The plot at Figure \ref{makespan_improvement_vs_cpu} depicts makespan improvement of the planer compared to two other models, it achieves up to 14\% compared to the current approach (PUSH\_par). The comparison against PUSH\_seq shows that the main part of improvement is achieved by parallel file transferring, while transferring files ahead of processing is responsible for up to 1,8\% makespan improvement (which is approximately 50 hours in the simulated case).
+Another set of simulations was performed with a fixed network bandwidth (1 Gbps) and a changing number of CPUs at the remote site (1\,000 -- 6\,000). The size of storage was adjusted to the number of CPUs (10 TB for every 1\,000 CPUs). The set of 60\,000 computational jobs was used for these simulations. The plot at Figure \ref{relative_makespan_vs_cpu} shows the dependence of makespan on the number of CPUs at the remote site for all scheduling approaches, this time makespan is presented as a ratio to the makespan of no\_network approach with 1\,000 CPUs which is 116 days, 4 hours, 16 minutes and 2 seconds. With growing number of CPUs the makespan decreases inversely linearly for the no\_network case, while for the other strategies the limited network bandwidth decreases the gain from using more CPUs. For 1\,000 CPUs the network bandwidth of 1 Gbps does not produce any significant latency and all the scheduling algorithms produce the same result. At the right side of the plot, when the number of CPUs is 6\,000, the performance is limited by the network bandwidth and additional CPUs do not decrease the makespan, and, consequently, none of the scheduling policies can provide any improvement. But for a number of CPUs between 1\,000 and 6\,000 the proposed model achieves a better makespan then the one currently used in data production (PUSH\_par), allowing to use more CPUs efficiently. The plot at Figure \ref{makespan_improvement_vs_cpu} depicts makespan improvement of the planner compared to two other models, it achieves up to 14\% compared to the current approach (PUSH\_par). The comparison against PUSH\_seq shows that the main part of improvement is achieved by parallel file transferring, while transferring files ahead of processing is responsible for up to 1,8\% makespan improvement (which is approximately 50 hours in the simulated case).
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 \begin{minipage}{1\textwidth}
 \centering
-    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=1\textwidth]{pic/relative_makespan_vs_cpu.pdf}
-
+    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=.7\textwidth]{pic/relative_makespan_vs_cpu.pdf}
     \caption{A dependence of a data production makespan on the number of CPUs available at the remote node which is connected over 1 Gbps link to the central storage. The size of a local disk was adjusted to the number of CPUs (10 TB for every 1\,000 CPUs). The set of 60\,000 computational jobs was used for these simulations. The makespan is presented as a ratio to the makespan of no\_network approach with 1\,000 CPUs which is 116 days, 4 hours, 16 minutes and 2 seconds.}
     \label{relative_makespan_vs_cpu}
-\end{minipage}\hspace{1pc}%
+\end{minipage}\hspace{3mm}%
+
 \begin{minipage}{1\textwidth}
 \centering
-    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=1\textwidth]{pic/makespan_improvement_vs_cpu.pdf}
+    \includegraphics[trim =00mm 00mm 00mm 00mm ,clip, width=.7\textwidth]{pic/makespan_improvement_vs_cpu.pdf}
     \caption{A makespan improvement of the proposed model compared to other simulated scheduling approaches as a function of CPUs at the remote site. The remote node was connected over 1 Gbps link to the central storage, the size of a local disk was adjusted to the number of CPUs (10 TB for every 1\,000 CPUs). The set of 60\,000 computational jobs was used for these simulations.}
     \label{makespan_improvement_vs_cpu}
 \end{minipage} 
 \end{figure}
-%maybe add a plot of CPU utilization with a huge number of CPUs, showing that the planer can keep more of them busy.
 
-At this point the reader might be confused by very close behavior of the PLANER and PUSH\_seq models, however, this is due to simulation with a single remote site, while the planer was designed to gain an improvement not by only  transferring files in advance and in a sequential mode, but also due to distribution of a network load in a more complex grid topology. Such a case will be studied in the following subsection. However, the simulations with a single remote node are important to test the planer, and understand the dynamics of the process. These simulations allow us to conclude, that the proposed model can utilize more remote computational power using a given network bandwidth and also can increase the performance in the case when a network bandwidth becomes decreased due to other network activity. These two factors provide more flexibility when setting up a remote data production.
+At this point the reader might be confused by very close behavior of the PLANNER and PUSH\_seq models, however, this is due to simulation with a single remote site, while the planner was designed to gain an improvement not by only  transferring files in advance and in a sequential mode, but also due to distribution of a network load in a more complex grid topology. Such a case will be studied in the following subsection. However, the simulations with a single remote node are important to test the planner, and understand the dynamics of the process. These simulations allow us to conclude, that the proposed model can utilize more remote computational power using a given network bandwidth and also can increase the performance in the case when a network bandwidth becomes decreased due to other network activity. These two factors provide more flexibility when setting up a remote data production.
 
 
-\subsection{Simulations with multiple remote nodes}
+\subsection{Simulations with a realistic Grid structure}
 
-The next set of simulations is dedicated to test the planer with a Grid of reasonable size. The Grid network for these simulations is depicted at Figure \ref{simulated_grid}. It consists of three computational nodes named FAST, MEDIUM and SLOW which are connected to the central storage with a 1 Gbps, 300 Mbps and 100 Mbps network links respectively. Each node has 1\,000 of CPUs and a local disc of 12 TB size. In addition to that, all the nodes are interconnected with links of equal capacity (see perimeter links at Figure \ref{simulated_grid}). The capacity of those links was changing from 10 to 500 Mbps in different simulations in order to study how the usage of indirect transfer paths can improve the data production efficiency. The PUSH\_par and PUSH\_seq models (see Section \ref{scenarios}) are able to use the direct connections only, while the "PLANER" considers all the available transfer paths. The set of 60\,000 computational jobs was used for these simulations.
+The next set of simulations is dedicated to test the planner with a Grid of reasonable size. The Grid network for these simulations is depicted at Figure \ref{simulated_grid}. It consists of three computational nodes named FAST, MEDIUM and SLOW which are connected to the central storage with a 1 Gbps, 300 Mbps and 100 Mbps network links respectively. Each node has 1\,000 of CPUs and a local disc of 12 TB size. In addition to that, all the nodes are interconnected with links of equal capacity (see perimeter links at Figure \ref{simulated_grid}). The capacity of those links was changing from 10 to 500 Mbps in different simulations in order to study how the usage of indirect transfer paths can improve the data production efficiency. The PUSH\_par and PUSH\_seq models (see Section \ref{scenarios}) are able to use the direct connections only, while the PLANNER considers all the available transfer paths. The set of 60\,000 computational jobs was used for these simulations.
 \begin{figure}
   \begin{center}
     \includegraphics [angle =-90, trim= 30mm 50mm 30mm 50mm , clip, width=0.5\textwidth]{pic/grid_dia.pdf}
@@ -446,18 +472,16 @@ The next set of simulations is dedicated to test the planer with a Grid of reaso
   \end{center}  
 \end{figure}
 
-
-
-The results of the simulations are given at Figure \ref{multi_cpu_consumption}. The plot shows how the makespan improvement of the PLANER compared to PUSH\_par and PUSH\_seq models is depending on the bandwidth of the links between the remote nodes. As it is seen at the plot, the planer can provide up to 28\% improvement against the current scheduling approach (PUSH\_par) and up to approximately 20\% improvement against the PUSH\_seq. Additional monitoring has shown that the planer, as expected, redirects part of the input flow from the "FAST" node to the "MEDIUM" and "SLOW"; and from "MEDIUM" to "SLOW". This allows to balance the network load and achieve the higher CPU utilization. At the same time the opposite transfer paths are used to transfer output files, and that allows to avoid possible bottlenecks. According to the results, the additional usage of an available bandwidth between remote nodes, even as low as 20 Mbps, can result in a significant performance improvement.
+The results of the simulations are given at Figure \ref{multi_cpu_consumption}. The plot shows how the makespan improvement of the PLANNER compared to PUSH\_par and PUSH\_seq models is depending on the bandwidth of the links between the remote nodes. As it is seen at the plot, the planner can provide up to 28\% improvement against the current scheduling approach (PUSH\_par) and up to approximately 20\% improvement against the PUSH\_seq. Additional monitoring has shown that the planner, as expected, redirects part of the input flow from the "FAST" node to the "MEDIUM" and "SLOW"; and from "MEDIUM" to "SLOW". This allows to balance the network load and achieve the higher CPU utilization. At the same time the opposite transfer paths are used to transfer output files, and that allows to avoid possible bottlenecks. According to the results, the additional usage of an available bandwidth between remote nodes, even as low as 20 Mbps, can result in a significant performance improvement.
 \begin{figure}
   \begin{center}
-    \includegraphics [trim= 0mm 00mm 0mm 00mm , clip,       	width=1\textwidth]{pic/3nodes_1storage_makespan_improvement.pdf}
+    \includegraphics [trim= 0mm 00mm 0mm 00mm , clip,       	width=.7\textwidth]{pic/3nodes_1storage_makespan_improvement.pdf}
     \caption{A dependence of a data production makespan improvement of the proposed model on the bandwidth of the links between remote nodes. The Grid structure is given at Figure \ref{simulated_grid}.  A set of 60\,000 data production jobs was used for the simulations.}
       \label{multi_makespan_compare}	
   \end{center}  
 \end{figure}
 
-The plot at Figure \ref{multi_cpu_consumption} shows the CPU utilization (percentage of busy CPUs over total CPUs in the system) as a function of time for the simulation with 100 Mbps interconnecting links. As it can be observed, both PUSH\_par and PUSH\_seq models did not manage to utilize 100\% of CPUs, and the number of busy CPUs is fluctuating over time. This simulation, also, illustrates that the currently used scheduling approach (PUSH\_par) can lead to significant performance drop when multiple CPUs access the remote data over a shared bandwidth simultaneously and uncoordinately and, as a result, delay each other. At the same time the PLANER achieves 100\% CPU utilization shortly after the start and keeps it until the end of simulation due to distributing the network load over the links which would be idle otherwise. The makespan improvement in this simulation is approximately 28\% and 20\% compared to PUSH\_par and PUSH\_seq respectively .
+The plot at Figure \ref{multi_cpu_consumption} shows the CPU utilization (percentage of busy CPUs over total CPUs in the system) as a function of time for the simulation with 100 Mbps interconnecting links. As it can be observed, both PUSH\_par and PUSH\_seq models did not manage to utilize 100\% of CPUs, and the number of busy CPUs is fluctuating over time. This simulation, also, illustrates that the currently used scheduling approach (PUSH\_par) can lead to significant performance drop when multiple CPUs access the remote data over a shared bandwidth simultaneously and uncoordinately and, as a result, delay each other. At the same time the PLANNER achieves 100\% CPU utilization shortly after the start and keeps it until the end of simulation due to distributing the network load over the links which would be idle otherwise. The makespan improvement in this simulation is approximately 28\% and 20\% compared to PUSH\_par and PUSH\_seq respectively .
 \begin{figure}
   \begin{center}
     \includegraphics [trim= 0mm 00mm 0mm 00mm , clip,width=1\textwidth]{pic/3models_link01.png}
@@ -478,7 +502,7 @@ flow maximization approach. The proposed model will enable automated and scalabl
 
 The model was tested using one of the standard tools for Grid simulation (GridSim). The data extracted form the log database of real data production framework of the STAR experiment was used as input for simulations. The simulations has shown that the proposed model systematically provides better performance for distributed computations, which can reach up to 26\% improvement compared to the current scheduling approach. According to our results, the model can help to efficiently utilize more remote computational power using a limited network bandwidth. In addition to that, in our model the jobs are submitted to CPUs only after the data can be accessed efficiently by those, otherwise the CPUs remain idle and can be assigned to other computational tasks. These factors provide more flexibility when setting up a remote data production.
 
-We continue the development of the data production planer, as the next step we plan to verify results of the simulations using data from more HENP experiments (such as ALICE at CERN) and study the effects of a background network traffic. We also plan to study the scalability of the approach, the planer performance, and the influence of the parameters, such as planing time interval, on the quality of the solution. The final goal is to integrate the developed model into the data production framework of the experiment STAR.
+We continue the development of the data production planner, as the next step we plan to verify results of the simulations using data from more HENP experiments (such as ALICE at CERN) and study the effects of a background network traffic. We also plan to study the scalability of the approach, the planner performance, and the influence of the parameters, such as planing time interval, on the quality of the solution. The final goal is to integrate the developed model into the data production framework of the experiment STAR.
 
 
 \begin{acknowledgements}
